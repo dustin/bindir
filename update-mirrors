@@ -11,14 +11,19 @@ t=tla
 todo=`$t archives | egrep -- -SOURCE | sed s/-SOURCE//g`
 for a in $todo
 do
-	# Allow for optional limits per-archive.
-	if [ -f ${HOME}/.arch-params/=mirror-limits/$a ]
+	if [ -f ${HOME}/.arch-params/=mirror-limits/${a}-NO ]
 	then
-		for lim in `cat ${HOME}/.arch-params/=mirror-limits/$a`
-		do
-			$t archive-mirror -s $a $lim
-		done
+		echo "Skipping $a"
 	else
-		$t archive-mirror -s $a
+		# Allow for optional limits per-archive.
+		if [ -f ${HOME}/.arch-params/=mirror-limits/$a ]
+		then
+			for lim in `cat ${HOME}/.arch-params/=mirror-limits/$a`
+			do
+				$t archive-mirror -s $a $lim
+			done
+		else
+			$t archive-mirror -s $a
+		fi
 	fi
 done
