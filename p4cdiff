@@ -1,0 +1,72 @@
+#!/usr/bin/perl
+## Copyright (C) 2004 Jan Hudec
+## Modified ever so slightly for p4 by Dustin Sallings
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+%color = (
+    black => 30,
+    red => 31,
+    green => 32,
+    yellow => 33,
+    blue => 34,
+    magenta => 35,
+    cyan => 36,
+    white => 37,
+    bk => 30,
+    re => 31,
+    gr => 32,
+    ye => 33,
+    bl => 34,
+    ma => 35,
+    cy => 36,
+    wh => 37
+);
+
+sub bold {
+    my ($color, $string) = @_;
+    $color = $color{$color} if exists $color{$color};
+    print "\e[${color};1m${string}\e[0m\n";
+}
+
+sub norm {
+    my ($color, $string) = @_;
+    $color = $color{$color} if exists $color{$color};
+    print "\e[${color}m${string}\e[0m\n";
+}
+
+sub exe {
+    if($] >= 5.008) { # 5.8 has a sane syntax...
+	open STDIN, '-|', qw(p4 diff -du), @_ or die "Can't run p4";
+    } else { # 5.6's weird syntax...
+	open(STDIN, '-|') || exec(qw(p4 diff -du), @_) || die "Can't run p4";
+    }
+    eval {
+	open WP, "|diffstat";
+    } or open WP, ">/dev/null";
+
+    $| = 1;
+    while(<STDIN>) {
+	$o = $_;
+	chomp $_;
+	/^(\*\s)/		? bold wh => $_ :
+	/^(?:\+\+\+|---)/	? norm gr => $_ :
+	/^\+/		? bold cy => $_ :
+	/^-/		? bold re => $_ :
+	/^!/		? bold bl => $_ :
+	/^diff/		? norm cy => $_ :
+	/(\@\@.*\@\@)(.*)/	? print "\e[$color{ye};1m$1\e[$color{wh};1m$2\e[0m\n" :
+			      print $_, "\n";
+	print WP $o;
+    }
+
+    print "---------------------\n";
+    close WP;
+    wait;
+    wait;
+}
+
+exe(@ARGV[1 .. $#ARGV]);
+
+# arch-tag: 689f32af-bac3-4621-8697-fd29951bb777
