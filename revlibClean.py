@@ -19,12 +19,8 @@ _debug = False
 
 def getLines(cmd):
     """Get a list of lines produced by the given command"""
-    a=[]
     f=os.popen(cmd)
-    l=f.readline()
-    while l != '':
-        a.append(l.strip())
-        l=f.readline()
+    a=[l.strip() for l in f]
     f.close()
     return a
 
