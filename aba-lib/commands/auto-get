@@ -1,0 +1,77 @@
+#! /bin/sh
+## Copyright (C) 2004 Gergely Nagy and Aaron Bentley
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+
+. "$abadir/aba-lib"
+
+cmd_exec()
+{
+  if [ -z "$(which tla-archive-locate 2>/dev/null)" ] ; then
+    echo "tla-archive-locate not installed, exiting." >&2
+    exit 1
+  fi
+
+  if [ $1 = "--source" ]; then
+    local source="$1 $2";
+    shift; shift
+  fi
+
+  local archive="$(tla parse-package-name -a $1)"
+  if [ -n "$archive" ]; then
+    if [ -z "$(tla archives $archive)" ]; then
+      local loc=$(tla-archive-locate $source $archive)
+      if [ -z "${loc}" ]; then
+	echo Archive not found
+	return 1;
+      else
+	echo Found archive at ${loc}
+	tla register-archive "${loc}"
+      fi
+    fi
+  fi
+  tla get $1 $2
+  if [ -n "${loc}" ]; then
+    tla register-archive -d $archive
+  fi
+}
+cmd_desc()
+{
+echo '                    auto-get : get a revision from an auto-located archive'
+}
+
+cmd_help()
+{
+echo "If the archive is unspecified, auto-register it.  Then use it to"
+echo "construct a project tree for the given revision"
+echo "usage: aba auto-get [options] archive dest"
+echo
+echo "   -h, --help              Display a help message and exit."
+echo "   -H                      Display a verbose help message and exit."
+echo "   --source                Select from a particular listing source"
+}
+
+cmd_ext_help()
+{
+	echo
+	echo "Queries one of the available archive registries, and temporarily registers"
+	echo "the archive, if found."
+	cat <<EOT
+
+Registry:           Location:
+-----------------------------------------------------------------------------
+sourcecontrol       http://sourcecontrol.net/stats/archivestats.html
+(also aliased to sc)
+
+gnuarch_wiki        http://gnuarch.org/bin/view/Main/ArchiveRegistry
+(also aliased to gnuarch)
+
+sourcecontrol_wiki  http://wiki.sourcecontrol.net/moin.cgi/Archive_20Registry
+(also aliased to scwiki and sc_wiki)
+EOT
+}	
+
+aba_run "$@"
+# arch-tag: auto-get by Aaron Bentley (0:44 Feb 3, 2004)

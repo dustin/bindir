@@ -1,0 +1,26 @@
+#!/bin/sh
+# Copyright (C) 2004 Aaron Bentley
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+cmd_exec()
+{
+  tla tag -S `aba_tree_revision` $1 
+}
+cmd_desc()
+{
+  echo '                    tag-this : shortcut for tla tag -S `tla tree-version`'
+}
+cmd_help()
+{
+  echo "This is just a version of tag that uses the current tree's version as the"
+  echo "source.  Sadly, it's too dumb to permit options."
+}
+cmd_ext_help()
+{
+echo -n
+}
+aba_run "$@"
+# arch-tag: tag-this by Aaron Bentley (13:51 Jan 22, 2004)

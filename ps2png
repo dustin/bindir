@@ -1,0 +1,13 @@
+#!/bin/sh
+
+IN="$1"
+OUT=`basename "$IN" .ps`.png
+
+gs -q -dNOPAUSE -dBATCH -sDEVICE=bbox "$IN" > /tmp/bbox.$$ 2>&1
+DIM=`egrep ^"%%BoundingBox" /tmp/bbox.$$ \
+	| head -1 | awk '{print $2+$4 "x" $3+$5}'`
+rm -f /tmp/bbox.$$
+
+echo "Image size:  $DIM"
+
+gs -g$DIM -dBATCH -q -sDEVICE=png16m -sOutputFile="$OUT" -dNOPAUSE "$IN"

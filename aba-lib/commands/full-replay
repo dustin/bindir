@@ -1,0 +1,38 @@
+#!/bin/sh
+# Copyright (C) 2004 Aaron Bentley
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+cmd_exec()
+{
+  tla replay $1
+  tla cat-log $1 > `tla make-log`
+}
+cmd_desc()
+{
+  echo '                 full-replay : replays a revision and log into a different tree'
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+Replays a revision into the current directory, and copies its merge log
+usage: $abaname $(basename $0) revision
+
+Note, this command copies the entire log headers, which may be too much.
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+EOH
+}
+
+aba_run "$@"
+# arch-tag: full-replay by Aaron Bentley (23:24 Jan 19, 2004)

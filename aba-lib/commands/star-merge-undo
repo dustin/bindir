@@ -1,0 +1,42 @@
+#! /bin/sh
+## Copyright (C) 2004 Aaron Bentley
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+# executes the command ("$@" are the arguments after the command name)
+cmd_exec()
+{
+  aba_star_merge_undo "$@"
+}
+
+# one-liner description for aba help
+cmd_desc()
+{
+    aba_desc $(basename $0) "reverts the changes from a star-merge"
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+reverts the changes from a star-merge
+usage: $abaname $(basename $0) [options] [FROM]
+
+All star-merge options may be used, except for --changes
+Only the changes from the star-merge are reverted.  All other changes will 
+remain.
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+EOH
+}	
+
+aba_run "$@"
+# arch-tag: star-merge-undo by Aaron Bentley  (23:25 Mar 10 2004)

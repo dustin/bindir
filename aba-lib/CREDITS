@@ -1,0 +1,23 @@
+CREDITS (in reverse alphabetical order)
+
+Gergely Nagy
+  * Improved portability (especially to Dash)
+  * Contributed auto-register-archive
+
+Jan Hudec
+  * Fixed space handling
+  * Made it easy to install aba anywhere with a simple symlink
+  * Made it possible to change the alias character from ^ into anything else
+  * Added the ability to disable alias expansion
+  * Prevented $ from being interpreted in alias expansion
+  * Added helper functions
+  * Added commands
+
+Johannes Martin Berg
+  * Added "export" command
+
+Aaron Bentley
+  * Originally threw this script together
+
+
+arch-tag: CREDITS by Aaron Bentley  (19:31 Feb 12 2004)

@@ -1,0 +1,56 @@
+#! /bin/sh
+#
+# diskImageHelper
+
+if [ $# -gt 1 ] ; then
+    # We have at least the minimum 2 args
+
+
+    if [ z"$1" = z"create" ] ; then
+        if [ $# -eq 3 ] ; then
+            # Create requires three args
+            imageName=$2
+            imageSize=$3
+
+            echo
+            echo -n "Creating ${imageSize} MB disk image named ${imageName}..."
+
+            hdiutil create ${imageName}.dmg -megabytes ${imageSize} -layout NONE
+
+            hdidOutput=`hdid -nomount ${imageName}.dmg | grep '/dev/disk[0-9]*'`
+
+            sudo /sbin/newfs_hfs -w -v ${imageName} -b 4096  ${hdidOutput}
+
+            hdiutil eject ${hdidOutput}
+
+            echo "Done."
+            echo
+
+            exit 0
+        fi
+    elif [ z"$1" = z"freeze" ] ; then
+        if [ $# -eq 2 ] ; then
+            # Freeze requires two args
+            imageName=$2
+
+            echo
+            echo -n "Converting disk image in file ${imageName} to compressed format..."
+
+            mv ${imageName}.dmg ${imageName}.orig.dmg
+            hdiutil convert ${imageName}.orig.dmg -format UDCO -o ${imageName}
+
+            echo "Done."
+            echo
+
+            exit 0
+        fi
+    fi
+
+fi
+
+# if we did not exit above, it is an input error
+
+echo "usage: $0 create <ImageNameWithNoExtension> <NumberOfMegabytes>"
+echo "       $0 freeze <ImageNameWithNoExtension>"
+
+exit 1

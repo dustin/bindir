@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd $HOME/lib
+rm -rf java
+mkdir java
+cp /afs/@cell/misc/web/java/jar/*.jar java

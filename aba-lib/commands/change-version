@@ -1,0 +1,28 @@
+#!/bin/sh
+# Copyright (C) 2004 Aaron Bentley
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+cmd_exec()
+{
+  aba_no_changes
+  aba_try tla sync-tree $1
+  aba_try tla set-tree-version $1
+  aba_try tla undo -n
+}
+cmd_desc()
+{
+  echo '              change-version : changes tree to the specified version'
+}
+cmd_help()
+{
+  echo "This changes the current version to the specified version or revision"
+}
+cmd_ext_help()
+{
+echo -n
+}
+aba_run "$@"
+# arch-tag: change-version by Aaron Bentley (15:17 Jan 30, 2004)

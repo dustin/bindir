@@ -1,0 +1,11 @@
+#!/bin/sh
+
+http_proxy=http://juan:3128/
+ftp_proxy=http://juan:3128/
+
+# No source
+shift
+
+echo "Running curl $@" 1>&2
+
+curl "$@"

@@ -1,0 +1,28 @@
+#!/bin/sh
+# Copyright (C) 2004 Aaron Bentley
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+cmd_exec()
+{
+  if [ -n "$1" ]; then
+    revision=$(aba_full_revision $1) 
+  fi
+  tla changes --diffs $revision
+}
+cmd_desc()
+{
+  echo '                        diff : shortcut for tla changes --diff'
+}
+cmd_help()
+{
+  echo "It's like the CVS command."
+}
+cmd_ext_help()
+{
+  echo "Really."
+}
+aba_run "$@"
+# arch-tag: diff by Aaron Bentley (12:16 Jan 15, 2004)

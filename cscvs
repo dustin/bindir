@@ -1,0 +1,256 @@
+#!/usr/bin/env python
+# -*- Mode: python -*-
+#
+# Copyright (C) 2002-2003 Mark Ferrell <xrxgrok@yahoo.com>
+#
+# -----------------------------------------------------------------------
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#   1. Redistributions of source code must retain the above copyright notice,
+#      this list of conditions and the following disclaimer.
+#
+#   2. Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
+# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+# -----------------------------------------------------------------------
+
+import sys, string, imp, re, os, getopt
+
+if os.environ.has_key('CSCVS_LIBS'):
+	CSCVS_LIBS = os.environ['CSCVS_LIBS']
+elif os.access(os.path.join(os.environ['HOME'], '.cscvs-path'), os.F_OK):
+	CSCVS_LIBS = string.strip(open(os.path.join(os.environ['HOME'], '.cscvs-path'), 'r').read())
+else:
+	CSCVS_LIBS = '/Users/dustin/lib/cscvs'
+sys.path.append(os.path.join(CSCVS_LIBS, 'modules'))
+import CVS
+config = CVS.Config()
+config.path = os.path.join(CSCVS_LIBS, 'cmds')
+config.cat_path = os.path.join(config.topdir, 'CVS/Catalog.sqlite')
+config.progname = 'cscvs'
+
+cscvs_cmd_re = re.compile(r'^(.*)\.py$')
+help_reminder = """(Specify the --help option for a list of other help options)\n"""
+version_info = """
+ChangeSet Concurrent Versions System (CSCVS) 1.0pre25 (client)
+
+Copyright (c) 2003 Mark Ferrell
+"""
+usage = """usage cscvs [cscvs-options] command [command-options-and-arguments]
+  where cscvs-options are -q, -n, etc.
+    (specify --help-options for a list of options)
+  where command is add, admin, etc.
+    (specify --help-commands for a list of commands
+     or --help-synonymns for a list of command synonymns)
+  where command-options-and-arguments depend on the specific command
+    (specify -H followed by a command name for command-specific help)
+  Specify --help to recieve this message
+
+The ChangeSet Concurrent Versions System (CSCVS) is a tool for version control.\n"""
+
+import StorageLayer
+StorageLayer.setConfig(config)
+
+def callSubcommand():
+	if not os.path.exists(os.path.join(config.path, '%s.py' % config.cmd)):
+		for FILE in os.listdir(config.path):
+			cmd_match = cscvs_cmd_re.match(FILE)
+			if not cmd_match: continue
+			realcommand = cmd_match.group(1)
+			for synonym in getAttribute(realcommand, 'synonyms'):
+				if synonym == config.cmd:
+					module = getAttribute(realcommand, realcommand)
+					break
+			else: continue
+			break
+		else:
+			sys.stderr.write('Unknown command: `%s\'\n\n' % config.cmd)
+			showSummary()
+			return
+	else: module = getAttribute(config.cmd, config.cmd)
+
+	if not config.root:
+		sys.stderr.write("cscvs %s: No CVSROOT specified!  Please use the `-d' option\ncscvs [%s aborted]: or set the CVSROOT environment variable.\n" % (config.cmd, config.cmd))
+		sys.exit(1)
+
+	import Runner
+	Runner.getRunner(config, module).run()
+
+def getAttribute(modname, attribute):
+	module = apply(imp.load_module, ((modname,) + imp.find_module(modname, [config.path])))
+	return getattr(module, attribute)
+
+def showOptions():
+	sys.stderr.write("""CSCVS global options (specified before the command name) are:
+    -H           Display usage information for command.
+    -Q           Cause CSCVS to be really quiet.
+    -q           Cause CSCVS to be somewhat quiet.
+    -r           Make checked-out files read-only.
+    -w           Make checked-out files read-write (default).
+    -l           Turn history logging off.
+    -n           Do not execute anything that will change the disk.
+    -v           CSCVS version and copyright.
+    -T tmpdir    Use 'tmpdir' for temporary files.
+    -e editor    Use 'editor' for editing log information.
+    -d CVS_root  Overrides $CVSROOT as the root of the CVS tree.
+    -c catalog   Specify location to use for catalog cache
+    -f           Do not use the ~/.cvsrc file.
+    -p file      Profile cscvs performance.
+    -z #         Use compression level '#' for net traffic.
+    -s VAR=VAL   Set CVS user variable.\n""")
+	sys.stderr.write(help_reminder)
+
+
+def showUsage(subcommand):
+	if not os.path.exists(os.path.join(config.path, '%s.py' % subcommand)):
+		for FILE in os.listdir(config.path):
+			cmd_match = cscvs_cmd_re.match(FILE)
+			if not cmd_match: continue
+			realcommand = cmd_match.group(1)
+			for synonym in getAttribute(realcommand, 'synonyms'):
+				if synonym == subcommand:
+					cmdusage = getAttribute(realcommand, 'usage')
+					sys.stderr.write("%s\n" % cmdusage)
+					sys.stderr.write(help_reminder)
+					return
+		else:
+			sys.stderr.write('Unknown command: `%s\'\n\n' % subcommand)
+			showSummary()
+			return
+	cmdusage = getAttribute(subcommand, 'usage')
+	sys.stderr.write("%s\n" % cmdusage)
+	sys.stderr.write(help_reminder)
+
+
+def showSynonyms():
+	sys.stderr.write('CSCVS command synonyms are:\n')
+	entries =  os.listdir(config.path)
+	entries.sort()
+	for FILE in entries:
+		cmd_match = cscvs_cmd_re.match(FILE)
+		if cmd_match != None:
+			subcommand = cmd_match.group(1)
+			synonyms = getAttribute(subcommand, 'synonyms')
+			sys.stderr.write('        %-12s' % subcommand)
+			for synonym in synonyms: sys.stderr.write(' %s' % synonym)
+			sys.stderr.write('\n')
+	sys.stderr.write(help_reminder)
+
+
+def showSummary():
+	sys.stderr.write('CSCVS commands are:')
+	entries = os.listdir(config.path)
+	entries.sort()
+	for FILE in entries:
+		cmd_match = cscvs_cmd_re.match(FILE)
+		if cmd_match != None:
+			subcommand = cmd_match.group(1)
+			summary = getAttribute(subcommand, 'summary')
+			sys.stderr.write('\n        %-12s\t%s' % (subcommand, summary))
+	sys.stderr.write("\n")
+	sys.stderr.write(help_reminder)
+
+
+def main(argv):
+	try:
+		short_opts = 'H:QqrwlnvT:e:d:fz:s:c:p:'
+		long_opts = ['help-options', 'help-commands', 'help-synonyms', 'help']
+		opts, args = getopt.getopt(argv[1:], short_opts, long_opts)
+
+		for opt, val in opts:
+			if opt == '-H':
+				showUsage(val)
+				return(1)
+			elif opt == '-Q':
+				config.verbosity = '-Q'
+			elif opt == '-q':
+				config.verbosity = '-q'
+			elif opt == '-r':
+				config.read_only = '-r'
+			elif opt == '-w':
+				config.read_only = '-w'
+			elif opt == '-l':
+				config.history = '-l'
+			elif opt == '-n':
+				config.dry_run = '-n'
+			elif opt == '-v':
+				sys.stdout.write(version_info)
+				sys.stdout.write(help_reminder)
+				return(0)
+			elif opt == '-T':
+				config.tmpdir = val
+			elif opt == '-e':
+				config.editor = val
+			elif opt == '-d':
+				config.root = '%s' % val
+			elif opt == '-c':
+				config.cat_path = '%s' % val
+			elif opt == '-f':
+				config.ignorerc = '-f'
+			elif opt == '-p':
+				config.profile = True
+				config.profileFile = '%s' % val
+			elif opt == '-z':
+				config.compress = '-z%s' % val
+			elif opt == '-s':
+				cvs_var, cvs_val = val.split('=')
+				config.variables[cvs_var] = cvs_val
+			elif opt == '--help-options':
+				showOptions()
+				return(1)
+			elif opt == '--help-commands':
+				showSummary()
+				return(1)
+			elif opt == '--help-synonyms':
+				showSynonyms()
+				return(1)
+			elif opt == '--help':
+				raise CVS.Usage
+
+	except CVS.Usage:
+		sys.stderr.write(usage)
+		return(1)
+	except getopt.GetoptError, msg:
+		sys.stderr.write('cscvs: %s\n' % msg.args[0])
+		sys.stderr.write(usage)
+		return(1)
+	except KeyboardInterrupt:
+		return(1)
+
+	if len(args) >= 1:
+		config.cmd = args[0]
+		config.args = args[1:]
+
+		try: callSubcommand()
+		except CVS.Usage: showUsage(config.cmd)
+		except getopt.GetoptError, msg:
+			sys.stderr.write('%s: %s\n' % (config.cmd, msg.args[0]))
+			showUsage(config.cmd)
+			return(1)
+		except KeyboardInterrupt:
+			sys.stderr.write('cscvs [%s aborted]: recieved interrupt signal\n' % config.cmd)
+			return(1)
+	else:
+		sys.stderr.write(usage)
+		return(1)
+
+if __name__ == '__main__':
+	retval = main(sys.argv)
+	if retval is not None:
+		sys.exit(retval)
+	sys.exit(0)
+
+# tag: Mark Ferrell Wed Jun 11 14:47:36 CDT 2003 (cscvs)
+#

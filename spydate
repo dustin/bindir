@@ -1,0 +1,13 @@
+#!/bin/sh
+
+TZ=US/Pacific
+export TZ
+PT=`date`
+TZ=US/Central
+CT=`date`
+TZ=Australia/Melbourne
+AT=`date`
+
+echo "Santa Clara    $PT"
+echo "Central        $CT"
+echo "Melbourne      $AT"

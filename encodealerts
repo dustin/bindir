@@ -1,0 +1,27 @@
+#!/bin/sh
+
+DIR=/tmp/alertencode.$$
+CODEDIR=$HOME/prog/pagermusic
+CLASS=net.spy.pagermusic.EncodeAlerts
+PSQL=/usr/local/pgsql/bin/psql
+
+damnit() {
+	echo "$@"
+	exit 1
+}
+
+rm -rf $DIR || damnit "Couldn't wipe start directory."
+
+mkdir $DIR || damnit "Couldn't make directory"
+
+cd $CODEDIR || damnit "Couldn't CD to $CODEDIR"
+java $CLASS $DIR || damnit "Encoding didn't work."
+cd $DIR || damnit "Couldn't get to encoded dir"
+au2mp3 *.au || damnit "Couldn't mp3ify and/or transfer stuff"
+cd || damnit "Couldn't get out!"
+
+echo "Updating database."
+$PSQL -h rubik -c 'update music set havemp3=true where havemp3=false' music \
+	|| damnit "Couldn't update database."
+
+rm -rf $DIR || damnit "Couldn't clean up the evidence."

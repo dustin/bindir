@@ -1,0 +1,39 @@
+#! /bin/sh
+## Copyright (C) 2004 Aaron Bentley
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+# executes the command ("$@" are the arguments after the command name)
+cmd_exec()
+{
+}
+
+# one-liner description for aba help
+cmd_desc()
+{
+    aba_desc $(basename $0) "description"
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+Description...
+usage: $abaname $(basename $0) [OPTIONS]
+
+    -d,--dir	Change to DIR first.
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+EOH
+}	
+
+aba_run "$@"
+# arch-tag: skel-command by Aaron Bentley (13:13 Feb 4, 2004)

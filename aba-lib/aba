@@ -1,0 +1,112 @@
+#!/bin/sh
+# Copyright (C) 2004 Aaron Bentley
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+
+readlink_qualify () {
+    case $2 in
+	/*) readlink_f "$2";;
+	*) readlink_f "$1/$2";;
+    esac
+}
+
+readlink_f () {
+    if [ -h "$1" ]; then
+	readlink_qualify `dirname -- "$1"` `readlink "$1"`
+    else
+	echo "$1";
+    fi
+}
+
+# Get directory where this script resides -- allows systemwide installation.
+test -z "$abadir" -a -f "$HOME/.aba/aba-lib" && abadir="$HOME/.aba"
+test -z "$abadir" && abadir=$(dirname $(readlink_f "$0"))
+test -f "$abadir/aba-lib" || {
+    echo "* Can't find aba-lib. Please set abadir to wherever it resides." >&2
+    exit 1
+}
+export abadir
+abaname=$(basename $0)
+export abaname
+
+cmd=$1
+[ -z "$cmd" ] || shift 
+if tmp=`tla tree-root 2>/dev/null`; then treeroot=$tmp; fi
+
+if [ -n "$treeroot" -a -f "$treeroot/{arch}/++options/$cmd" ]; then
+    prefix=`cat "$treeroot/{arch}/++options/$cmd"`
+elif [ -f ~/.aba/options/$cmd ]; then
+    prefix=`cat ~/.aba/options/$cmd`
+elif [ -f "$abadir/options/$cmd" ]; then
+    prefix=`cat "$abadir/options/$cmd"`
+fi
+
+if [ -f ~/.aba/aliases ]; then
+    aliaschar=$(grep '^[ 	]*aliaschar=.*' <~/.aba/aliases)
+    eval "$aliaschar" # So we honor quoting
+    aliaschar=${aliaschar:-^} # With zsh's extended globbing, ^ is no good choice.
+fi
+
+if [ -n "$aliaschar" ]; then
+    case $aliaschar in
+	\*)
+	    echo 'Aliaschar "*" '"won't work." >&2
+	    exit 1;;
+	\[|\]|.|^|\\)
+	    prepare_alias () {
+		sed "s:[\$]:\\\\\$:g;s:\\$aliaschar:\$:g" <<EOS
+$1
+EOS
+	    } ;;
+	$)
+	    prepare_alias () { 
+		echo "$1" 
+	    } ;;
+	*)
+	    prepare_alias () {
+		sed "s:[\$]:\\\\\$:g;s:$aliaschar:\$:g" <<EOS
+$1
+EOS
+	    } ;;
+    esac
+
+    # This runs in subshell due to round brackets.
+    expand_alias () (
+	. ~/.aba/aliases
+	eval "printf '%s' \"$(prepare_alias "$1")\""
+    )
+
+    # Spacewise correct expand-aliases, inline
+    # Well, actualy it's not correct for arguments that are expanded, but
+    # I don't know how to do that (command-substitution is not correct).
+    for arg; do
+	shift
+	case $arg in
+	    $aliaschar$aliaschar*)
+		set -- "$@" "$arg";;
+	    *$aliaschar*)
+		arg=$(expand_alias "$arg") 
+		set -- "$@" "$arg";;
+	    *)  set -- "$@" "$arg";;
+	esac
+    done
+fi
+
+if [ -x ~/.aba/commands/$cmd ] && [ ! -d ~/.aba/commands/$cmd ]; then
+#    echo ~/.aba/commands/$cmd exec $prefix "$@"
+    ~/.aba/commands/$cmd exec $prefix "$@"
+elif [ -x "$abadir/commands/$cmd" ] && [ ! -d ~/.aba/commands/$cmd ]; then
+#    echo "$abadir/commands/$cmd" exec $prefix "$@"
+    "$abadir/commands/$cmd" exec $prefix "$@"
+else
+#    echo tla $cmd $prefix "$@"
+  if [ -n "$ABAFILTER" ]; then
+    unset EDITOR
+    export EDITOR
+    tla $cmd $prefix "$@" | $ABAFILTER
+  else
+    tla $cmd $prefix "$@"
+  fi
+fi
+# arch-tag: aba by Aaron Bentley (12:14 Jan 15, 2004)

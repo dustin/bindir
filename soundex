@@ -1,0 +1,7 @@
+#!/usr/bin/env perl
+
+use Text::Soundex;
+
+for(@ARGV) {
+	print soundex($_) . ": $_\n";
+}

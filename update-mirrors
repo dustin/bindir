@@ -1,0 +1,24 @@
+#!/bin/sh
+# arch-tag: 91F90E48-441D-11D8-9167-000A957659CC
+#
+# Copyright (c) 2004  Dustin Sallings <dustin@spy.net>
+# This software is licensed under GPL v2 as described in the file ``COPYING''
+#
+# For any archive that has a -SOURCE, update the mirror.
+
+t=tla
+
+todo=`$t archives | egrep -- -SOURCE | sed s/-SOURCE//g`
+for a in $todo
+do
+	# Allow for optional limits per-archive.
+	if [ -f ${HOME}/.arch-params/=mirror-limits/$a ]
+	then
+		for lim in `cat ${HOME}/.arch-params/=mirror-limits/$a`
+		do
+			$t archive-mirror -s $a $lim
+		done
+	else
+		$t archive-mirror -s $a
+	fi
+done

@@ -1,0 +1,39 @@
+#!/bin/sh
+# Copyright (C) 2004 Aaron Bentley
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+cmd_exec()
+{
+  if [ -d ~/.aba/changeset ]; then
+    yes|rm -R ~/.aba/changeset
+  fi
+  revision=`aba_full_revision $1`
+  if [ -z "$revision" ]; then
+    echo Unable to determine a full revision spec from $1
+    exit 1
+  fi
+  if tla get-changeset $revision ~/.aba/changeset; then
+    tla show-changeset --diffs ~/.aba/changeset
+  fi
+  if [ -d ~/.aba/changeset ]; then 
+    yes|rm -R ~/.aba/changeset
+  fi
+}
+cmd_desc()
+{
+  echo '                    show-rev : shows the changes that appeared in a revision'
+}
+cmd_help()
+{
+  echo 'Displays the changes in a given revision.'
+}
+cmd_ext_help()
+{
+  echo 'Works a lot like get-changeset.'
+}
+aba_run "$@"
+# arch-tag: show-rev by Aaron Bentley (12:20 Jan 15, 2004)

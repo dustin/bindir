@@ -1,0 +1,26 @@
+#!/usr/local/bin/perl -w
+# Rename and renumber my MP3s
+
+use strict;
+use Data::Dumper;
+
+sub getMtime
+{
+	my($file)=@_;
+
+	return( (stat($file))[9] );
+}
+
+my @order=sort { getMtime($a) <=> getMtime($b) } @ARGV;
+my $i=0;
+
+for($i=0; $i<@order; $i++) {
+	my $origname=$order[$i];
+	my $name=$order[$i];
+	$name=~s/[^-A-z0-9.]/_/g;
+	$name=~s/__/_/g;
+	my $newname=sprintf("%02d_$name", ($i+1));
+
+	print "$origname -> $newname\n";
+	rename($origname, $newname);
+}

@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# Rename numbered jpegs to %03d numbered jpegs
+
+for i in "$@"
+do
+	NUMBER=`basename $i .jpg`
+	NEWNUMBER=`printf %03d $NUMBER`
+
+	echo "mv $i $NEWNUMBER.jpg"
+	mv $i $NEWNUMBER.jpg
+done

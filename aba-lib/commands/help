@@ -1,0 +1,48 @@
+#!/bin/sh
+# Copyright (C) 2004 Aaron Bentley
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+allhelp()
+{
+#  tla help "$@" | head -n -1
+#  tla help "$@" 
+  aba_omit_last 1 tla help "$@"
+  echo "* External aba Commands"
+  echo 
+  externhelp
+  echo
+  echo
+  echo Use aba command -h for help on \`command\', or aba help command for detailed help
+}
+
+
+externhelp()
+{
+  for c in ~/.aba/commands/*; do
+    test -x "$c" && "$c" desc
+  done 2>/dev/null
+
+    for c in "$abadir/commands"/*; do
+      if [ ! -x ~/.aba/commands/"$(basename $c)" ] && [ -x "$c" ]; then
+	"$c" desc
+      fi
+    done 2>/dev/null
+}
+case "$1" in
+  "exec" )
+    if [ -n "$2" ]; then 
+      if [ $2 = "--ext" ]; then 
+	externhelp
+      else
+	aba $2 -H
+      fi
+    else allhelp
+  fi
+  ;;
+  "desc" )
+  ;;
+esac
+# arch-tag: help by Aaron Bentley (12:17 Jan 15, 2004)

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ -f /tmp/music ]
+then
+	rm /tmp/music.sql
+	parseMusic < /tmp/music > /tmp/music.sql
+
+	echo "Loading `wc -l /tmp/music.sql` alerts."
+
+	$HOME/local/pgsql/bin/psql -f /tmp/music.sql -h rubik music \
+		&& rm -f /tmp/music
+fi

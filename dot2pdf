@@ -1,0 +1,9 @@
+#!/bin/sh
+
+IN="$1"
+OUT="`basename "$1" .dot`.pdf"
+
+dot -Tps -o dot2pdf.tmp.$$.ps "$IN"
+ps2pdf dot2pdf.tmp.$$.ps
+rm dot2pdf.tmp.$$.ps
+mv dot2pdf.tmp.$$.pdf "$OUT"

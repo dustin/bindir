@@ -1,0 +1,47 @@
+#!/bin/sh
+# Copyright (C) 2004 Aaron Bentley
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+unset ABAFILTER
+export ABAFILTER
+
+. "$abadir/aba-lib"
+cmd_exec()
+{
+  if [ -z "$EDITOR" ]; then
+    echo '$EDITOR not set'
+    exit 1
+  fi
+  if filename=`tla make-log`; then
+     tla log-for-merge >> $filename 
+     $EDITOR $filename 
+  fi
+}
+cmd_desc()
+{
+  echo '                       emlog : creates and edits a merge log'
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+creates and edits a merge log
+usage: $abaname $(basename $0) 
+
+This creates a merge log, then invokes $EDITOR to edit it.  Unfortunately,
+it is not idempotent like tla make-log, so don't run it twice for the same
+revision.
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+EOH
+}	
+aba_run "$@"
+
+# arch-tag: emlog by Aaron Bentley (12:12 Jan 23, 2004)

@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# arch-tag: 704DBCAC-4D7A-11D8-9E4C-000A957659CC
+#
+# Copyright (c) 2004  Dustin Sallings <dustin@spy.net>
+# This software is licensed under GPL v2 as described in the file ``COPYING''
+#
+# Swap a replicatable archive between read-only and read-write mode.
+#
+# This script works under the assumption that -MIRROR is local and -SOURCE is
+# remote.  Remote archives are considered writable by the script for display
+# purposes.
+#
+
+archive="dustin@spy.net--projects-2004"
+tla tree-version > /dev/null 2>&1
+if [ $? -eq 0 ]
+then
+	tv=`tla tree-version`
+	archive=`tla parse-package-name -a $tv`
+fi
+
+if [ $# -gt 0 ]
+then
+	archive="$1"
+fi
+
+archive_m="${archive}-MIRROR"
+archive_s="${archive}-SOURCE"
+
+m=`tla whereis-archive $archive_m`
+s=`tla whereis-archive $archive_s`
+b=`tla whereis-archive $archive`
+
+if [ "$m" = "" ]
+then
+	# There is not a MIRROR entry
+	if [ "$s" = "" ]
+	then
+		echo "No mirror registered for this archive."
+	else
+		# There is a SOURCE entry
+		tla register-archive -f $archive "$s"
+		tla register-archive -f $archive_m "$b"
+		tla register-archive -d $archive_s
+		echo "$archive is now remote (rw)"
+	fi
+else
+	# There is a MIRROR entry
+	tla register-archive -f $archive "$m"
+	tla register-archive -f $archive_s "$b"
+	tla register-archive -d $archive_m
+	echo "$archive is now in local (ro)"
+fi

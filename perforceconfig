@@ -1,0 +1,4 @@
+setenv P4PORT localhost:1666
+setenv P4USER dsallings
+setenv P4PASSWD OYQODsw2
+setenv P4CLIENT dsallings.mobile1

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -jar $HOME/bin/sql2dot.jar "$@"

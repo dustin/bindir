@@ -1,0 +1,79 @@
+#! /bin/sh
+## Copyright (C) 2004 Aaron Bentley
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+#prevent infinite filter loops!
+unset ABAFILTER
+export ABAFILTER
+
+. "$abadir/aba-lib"
+
+# executes the command ("$@" are the arguments after the command name)
+cmd_exec()
+{
+    c_bk="[30m"
+    c_re="[31m"
+    c_gr="[32m"
+    c_ye="[33m"
+    c_bl="[34m"
+    c_ma="[35m"
+    c_cy="[36m"
+    c_wh="[37m"
+    c_reset="[0m"
+    sed -e "s//^[/g" \
+    -e "s/^\*.*/$c_ye&$c_reset/" \
+    -e "s/^S  .*/$c_cy&$c_reset/" \
+    -e "s/^P  .*/$c_gr&$c_reset/" \
+    -e "s/^U  .*/$c_re&$c_reset/" \
+\
+    -e "s/^M  .*/$c_bl&$c_reset/" \
+    -e "s/^D  .*/$c_re&$c_reset/" \
+    -e "s/^A  .*/$c_cy&$c_reset/" \
+    -e "s/^C  .*/$c_ma&$c_reset/" \
+    -e "s/^=> .*/$c_bl&$c_reset/" \
+\
+    -e "s/^@@ .* @@/$c_gr&$c_reset/" \
+    -e "s/^+.*/$c_cy&$c_reset/" \
+    -e "s/^-.*/$c_re&$c_reset/"
+}
+
+# one-liner description for aba help
+cmd_desc()
+{
+    aba_desc $(basename $0) "colorizes tla or aba output"
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+colorizes tla or aba output
+usage: $abaname $(basename $0) 
+
+This is a filter.  To colorize output, pipe to this filter.  
+
+If you wish to colorize all non-interactive aba/tla commands, set the ABAFILTER
+variable: export ABAFILTER="aba colorize"
+
+Currently, colorizes
+- progress messsages
+- inventory
+- added/modified/removed files list
+- diff output
+
+No options are used
+
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+EOH
+}	
+
+aba_run "$@"
+# arch-tag: colorize by Aaron Bentley  (10:06 Mar 12 2004)

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd $HOME/lib/jakarta-jmeter/bin
+exec java -Xincgc -jar ApacheJMeter.jar "$@"

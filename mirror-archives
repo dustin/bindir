@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Do the tla mirrors
+
+# 1and1 internet mirror
+tla archive-mirror -s dustin@spy.net--projects-2004 \
+	dustin@spy.net--projects-2004-1AND1 "$@"
+
+# Private stuff mirror
+tla archive-mirror -s dustin@spy.net--private "$@"

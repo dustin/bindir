@@ -1,0 +1,24 @@
+#!/bin/sh
+# arch-tag: 8B001B0C-4E44-11D8-A9C8-000A957659CC
+#
+# Copyright (c) 2004  Dustin Sallings <dustin@spy.net>
+# This software is licensed under GPL v2 as described in the file ``COPYING''
+#
+# Update all of the entries in a config.  Similar to build-config, but will
+# also perform updates.
+
+for d in `tla cat-config $1 | awk '{print $1}'`
+do
+	if [ ! -d "$d" ]
+	then
+		echo "New entry in config, building $d"
+		tc=,,tmpconf.$$
+		rm -f $tc
+		tla cat-config $1 | egrep "^($d)" > $tc
+		tla build-config $tc
+		rm -f $tc
+	else
+		echo "Updating $d"
+		tla replay -d $d
+	fi
+done

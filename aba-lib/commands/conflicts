@@ -1,0 +1,55 @@
+#! /bin/sh
+## Copyright (C) 2004 Aaron Bentley
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+# executes the command ("$@" are the arguments after the command name)
+cmd_exec()
+{
+   root=$(tla tree-root) || exit 2;
+   cd $root
+
+   rej=$(find -regex '.*\.rej$');
+   orig=$(find -regex '.*\.orig$');
+   if [ -n "$rej" ]; then rej="$rej\n"; fi
+#      echo $rej;
+   if [ -n "$rej" ] || [ -n "$orig" ]; then
+     echo -e -n "$rej$orig"|sed -e "s/^\.\//C   /" -e "s/\.rej$//" -e "s/\.orig$//"|sort|uniq
+     exit 1;
+   fi
+   exit 0;
+}
+
+# one-liner description for aba help
+cmd_desc()
+{
+    aba_desc $(basename $0) "Displays a list of files with conflicts"
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+Displays a list of files with conflicts
+usage: $abaname $(basename $0)
+
+Lists all files for which .rej or .orig files exist.  This is not necessarily
+complete, because some commands produce inline conflict markers, e.g. 
+"star-merge--three-way"
+
+Returns 0 if no conflicts are detected, 1 if conflicts are detected, 2 on error.
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+EOH
+}	
+
+aba_run "$@"
+# arch-tag: conflicts by Aaron Bentley  (14:53 Mar 04 2004)

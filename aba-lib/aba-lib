@@ -1,0 +1,189 @@
+#!/bin/sh
+# Copyright (C) 2004 Aaron Bentley
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+
+aba_run()
+{
+if [ -z "$abaname" ]; then
+  aba "$(basename $0)" "$@"
+  exit
+fi
+
+case "$1" in
+  "exec" )
+  shift
+  if [ "$1" = "-h" ] ; then
+    cmd_help
+  elif [ "$1" = "--help" ] ; then
+    cmd_help
+  elif [ "$1" = "-H" ] ; then
+    cmd_help
+    cmd_ext_help
+  else
+    if [ -n "$ABAFILTER" ]; then
+      cmd_exec "$@" | $ABAFILTER
+    else 
+      cmd_exec "$@"
+    fi
+  fi
+  ;;
+  "desc" )
+  cmd_desc
+  ;;
+esac
+}
+
+aba_run_tlawrap()
+{
+if [ -z "$abaname" ]; then
+  aba "$(basename $0)" "$@"
+  exit
+fi
+
+case "$1" in
+  "exec" )
+  shift
+  if [ "$1" = "-h" ] ; then
+    cmd_help
+  elif [ "$1" = "--help" ] ; then
+    cmd_help
+  elif [ "$1" = "-H" ] ; then
+    cmd_ext_help
+  else
+    if [ -n "$ABAFILTER" ]; then
+      cmd_exec "$@" | $ABAFILTER
+    else 
+      cmd_exec "$@"
+    fi
+  fi
+  ;;
+  "desc" )
+  cmd_desc
+  ;;
+esac
+}
+
+
+aba_tree_source()
+{
+  logs=$(tla logs 2>/dev/null)
+  if [ $? -ne 0 ]; then
+    return 2
+  fi
+
+  tagsource=$(for r in $logs; do tla cat-log $r;done|grep "Continuation-of: "|head -n 1|sed s/"Continuation-of: "//)
+  if [ -z "$tagsource" ]; then
+    return 1
+  fi
+  echo $tagsource
+}
+
+
+aba_full_revision()
+{
+  if tla valid-package-name -p -v --lvl $1; then
+    echo $1
+  else
+    newname=`tla tree-version 2> /dev/null`--$1
+    if tla valid-package-name -p -v --lvl $newname; then
+      echo $newname
+    fi
+  fi
+}
+
+aba_omit_last()
+{
+  n=$1;
+  shift;
+  local lines="$(expr $("$@" | wc -l) - $n)"
+  "$@" | head  -n $lines
+}
+aba_desc()
+{
+  cmd=$1;
+  shift;
+  printf "%28s : %s\n" $cmd "$*"
+}
+
+aba_mktempdir()
+{
+  if [ -z "$TMPDIR" ]; then
+    TMPDIR="/tmp"
+  fi
+  mktemp -d "$TMPDIR/aba.XXXXXX"
+  if [ $? -ne 0 ] ; then
+    echo "panic: Could not create temporary directory!"
+    exit 2
+  fi
+}
+
+aba_mktemp()
+{
+  if [ -z "$TMPDIR" ]; then
+    TMPDIR="/tmp"
+  fi
+  mktemp "$TMPDIR/aba.XXXXXX"
+  if [ $? -ne 0 ] ; then
+    echo "panic: Could not create temporary file!"
+    exit 2
+  fi
+}
+aba_try()
+{
+  $@
+  if [ $? -ne 0 ] ; then
+    echo PANIC: failed to execute $@ >&2
+    exit 2
+  fi
+}
+aba_star_merge_undo()
+{
+  tmp=$(aba_mktempdir)
+  treeroot=$(tla tree-root)
+  echo "* undoing current changes"
+  aba_try tla undo > /dev/null
+  echo "* generating star-merge changeset"
+  aba_try tla star-merge --changes $tmp/merge-undo "$@" > /dev/null
+  echo "* redoing changes"
+  aba_try tla redo > /dev/null
+  echo "* reverse-applying star-merge changeset"
+  tla dopatch --reverse $tmp/merge-undo $treeroot
+  status=$?
+  if [ $status -gt 1 ]; then 
+    echo Failed to execute tla dopatch --reverse $tmp/merge-undo . >&2
+    return $status
+  fi
+  aba_try rm -Rf $tmp
+  return $status
+}
+
+aba_tree_revision()
+{
+  tla logs -d "${1:-.}" -r -f | head -n 1
+}
+aba_break_link()
+{
+   cp -p $1 '++brokelink' && mv '++brokelink' $1
+   if [ $? -ne 0 ]; then
+     echo "Can't break link for $1"
+     exit 2
+   fi
+}
+
+
+aba_no_changes ()
+{
+  tla changes > /dev/null
+  status=$?
+  if [ $status -eq 1 ]; then 
+    echo Project tree has uncommitted changes.  Aborting. 2>&2
+    exit 1;
+  fi
+  if [ $status -gt 1 ]; then
+    exit $status;
+  fi
+}
+
+# arch-tag: runner by Aaron Bentley (07:50 Jan 19, 2004)

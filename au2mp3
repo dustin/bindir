@@ -1,0 +1,27 @@
+#!/bin/sh
+
+MP3S=""
+
+for i in "$@"
+do
+	WAV=`basename $i .au`.wav
+	MP3=`basename $i .au`.mp3
+	TXT=`basename $i .au`.txt
+	MP3S="$MP3S $MP3"
+	TITLE=""
+	if [ -f $TXT ]
+	then
+		TITLE="`cat $TXT`"
+	fi
+	echo "$i -> $WAV"
+	sox $i -s -w $WAV
+	rm -f $i
+	echo "$WAV -> $MP3"
+	lame -c --tt "$TITLE" --tc "http://bleu.west.spy.net/" $WAV $MP3
+	rm -f $WAV
+done
+
+chmod 644 $MP3S
+ls -l $MP3S
+# scp $MP3S propaganda.spy.net:public_html/pagermusic/mp3/
+scp $MP3S 1and1:public_html/pagermusic/mp3/

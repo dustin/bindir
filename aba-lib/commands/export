@@ -1,0 +1,54 @@
+#!/bin/sh
+# Copyright (C) 2004 Johannes Berg
+#
+# See the file "COPYING" for further information about
+# the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+cmd_exec()
+{
+  tmpdir="$(aba_mktempdir)" && {
+    oldpwd="$(pwd)"
+    cd "$tmpdir"
+    tla get $1 $2 && {
+      pname=$(/bin/ls)
+      outname="$oldpwd/$pname.tar.gz"
+      res=0
+      if [ -e "$outname" ]; then
+        echo "The archive $outname already exists!"
+        res=1
+        tmpdirout="$(aba_mktempdir)" && {
+          res=0
+          outname="$tmpdirout/$pname.tar.gz"
+          echo "Using $outname instead."
+        }
+      fi
+      if test $res ; then
+        tla inventory -sB $pname | tar -T- --no-recursion -c -z -f $outname
+      fi
+    }
+    rm -Rf $tmpdir
+  }
+}
+cmd_desc()
+{
+  echo '                      export : export a revision into a tarball'
+}
+cmd_help()
+{
+  echo 'export : export a revision into a tarball'
+  echo 'usage: aba export revision [destination]'
+  echo
+  echo 'Exports a revision into the tarball destination.tar.gz.'
+  echo 'If no destination is given, uses the fully qualified'
+  echo '  category--branch--version--patchlevel'
+  echo 'as destination.'
+  echo
+}
+cmd_ext_help()
+{
+  echo -n
+}
+aba_run "$@"
+# arch-tag: export by Johannes Berg  (20:38 Feb 17 2004)

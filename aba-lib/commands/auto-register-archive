@@ -1,0 +1,75 @@
+#! /bin/sh
+## Copyright (C) 2004 Gergely Nagy
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+
+. "$abadir/aba-lib"
+
+have_tal=1
+if [ -z "$(which tla-archive-locate 2>/dev/null)" ]; then
+	have_tal=0
+fi
+
+cmd_exec()
+{
+	if [ ${have_tal} -eq 0 ]; then
+		echo "tla-archive-locate not installed, exiting." >&2
+		exit 1
+	fi
+ 
+        if [ $1 = "--source" ]; then
+	        local source="$1 $2";
+		local archive=$3;
+        else
+	        local archive=$1;
+        fi
+        
+        if [ -n "$(tla archives ^$archive\$)" ]; then
+	        echo Archive $archive already registered
+		exit 0
+        fi
+	local loc=$(tla-archive-locate $source $archive)
+
+	if [ -z "${loc}" ]; then
+		return 1;
+	else
+                echo Found archive at ${loc}
+		tla register-archive "${loc}"
+	fi
+
+}
+cmd_desc()
+{
+	echo '       auto-register-archive : find and register an archive'
+}
+
+cmd_help()
+{
+	if [ ${have_tal} -eq 0 ]; then
+		echo "Warning: this command needs tla-archive-locate which is not installed!"
+		echo
+	fi
+	echo "find an archive on one of the registries, and register it"
+	echo "usage: aba auto-register-archive [options] archive"
+	echo
+	echo "   -h, --help              Display a help message and exit."
+	echo "   -H                      Display a verbose help message and exit."
+	echo "   --source                Select from a particular listing source"
+}
+
+cmd_ext_help()
+{
+	echo
+	echo "Queries one of the available archive registries, and registers"
+	echo "the archive, if found."
+
+	if [ ${have_tal} -ne 0 ]; then
+		tla-archive-locate --help | tail -n +5
+	fi
+}	
+
+aba_run "$@"
+
+# arch-tag: 60e136e7-cfd2-49ae-9d83-cc5e67b18693
