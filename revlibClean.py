@@ -5,6 +5,7 @@ Copyright (c) 2004  Dustin Sallings <dustin@spy.net>
 arch-tag: B06B5B4A-1007-11D9-9AEF-000A957659CC
 """
 
+import getopt
 import sys
 import os
 import time
@@ -40,6 +41,27 @@ def getAge(path):
     age=now - st[stat.ST_CTIME]
     return age
 
+def libRemove(torm):
+    print "***DELETING*** ", torm
+    estat=os.system("tla library-remove " + torm)
+    if estat != 0:
+        print "Non-zero exit status:  " + `estat`
+
+def checkCandidateInteractive(revlib, arch, cat, branch, ver, rev):
+    torm=arch + "/" + ver + "--" + rev
+    sys.stdout.write("Should we remove " + torm + " [y/n] ")
+    sys.stdout.flush()
+    shouldGo=sys.stdin.readline()
+    if shouldGo[0] == 'y':
+        libRemove(torm)
+
+def checkCandidateAuto(revlib, arch, cat, branch, ver, rev):
+    age=getAge(os.path.join(revlib, arch, cat, branch, ver,
+        ver + "--" + rev))
+    if age > max_age:
+        torm=arch + "/" + ver + "--" + rev
+        libRemove(torm)
+
 def cleanup(revlib, arch, cat, branch, ver):
     """Look through the revisions at the given cat/branch/ver for deletables"""
     global max_age
@@ -50,17 +72,12 @@ def cleanup(revlib, arch, cat, branch, ver):
     if len(candidates) > 0:
         debug("\t\t\t\tCandidates: " + `candidates`)
         for r in candidates:
-            debug("\t\t\t\tChecking " + r)
-            age=getAge(os.path.join(revlib, arch, cat, branch, ver,
-                ver + "--" + r))
-            if age > max_age:
-                torm=arch + "/" + ver + "--" + r
-                print "***DELETING*** ", torm
-                estat=os.system("tla library-remove " + torm)
-                if estat != 0:
-                    print "Non-zero exit status:  " + `estat`
+            checkCandidate(revlib, arch, cat, branch, ver, r)
     else:
         debug("\t\t\t\tNo candidates")
+
+# This will contain the function that does the candidate checking
+checkCandidate = checkCandidateAuto
 
 #
 # The buck starts here.
@@ -69,9 +86,13 @@ def cleanup(revlib, arch, cat, branch, ver):
 if __name__ == '__main__':
     revlib=getLines("tla my-revision-library")[0]
 
-    # Check for -v flag
-    if len(sys.argv) > 1 and sys.argv[1] == '-v':
-        _debug = True
+    opts, args=getopt.getopt(sys.argv[1:], 'vi')
+
+    for opt in opts:
+        if opt[0] == '-v':
+            _debug = True
+        elif opt[0] == '-i':
+            checkCandidate = checkCandidateInteractive
 
     debug("Revlib: " + `revlib`)
 
