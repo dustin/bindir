@@ -32,9 +32,15 @@ if os.environ.has_key('CSCVS_LIBS'):
 	CSCVS_LIBS = os.environ['CSCVS_LIBS']
 elif os.access(os.path.join(os.environ['HOME'], '.cscvs-path'), os.F_OK):
 	CSCVS_LIBS = string.strip(open(os.path.join(os.environ['HOME'], '.cscvs-path'), 'r').read())
+elif os.access(os.path.join(os.environ['HOME'], 'cscvs'), os.F_OK):
+	CSCVS_LIBS = os.path.join(os.environ['HOME'], 'cscvs')
 else:
-	CSCVS_LIBS = '/Users/dustin/lib/cscvs'
+	CSCVS_LIBS = os.path.dirname(sys.argv[0])
 sys.path.append(os.path.join(CSCVS_LIBS, 'modules'))
+
+# print "CSCVS_LIBS:", CSCVS_LIBS
+# print "sys.path:", sys.path
+
 import CVS
 config = CVS.Config()
 config.path = os.path.join(CSCVS_LIBS, 'cmds')
