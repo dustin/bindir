@@ -1,6 +1,6 @@
 #!/bin/sh
 
-rsync -varltpogS --progress --stats \
+rsync "$@" -varltpogS --progress --stats \
 	--delete --delete-excluded --exclude .DS_Store \
 	--exclude="*.m4p" --exclude="*.m4a" \
 	"$HOME/Music/iTunes/iTunes Music/" disk::dustinmp3w/
