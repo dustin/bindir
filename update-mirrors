@@ -14,6 +14,10 @@ do
 	if [ -f ${HOME}/.arch-params/=mirror-limits/${a}-NO ]
 	then
 		echo "Skipping $a"
+	elif [ -f ${HOME}/.arch-params/=mirror-limits/${a}-ALT-CMD ]
+	then
+		echo "Running alternative command for $a"
+		${HOME}/.arch-params/=mirror-limits/${a}-ALT-CMD
 	else
 		echo "Mirroring $a"
 		# Allow for optional limits per-archive.
