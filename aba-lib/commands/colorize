@@ -28,10 +28,10 @@ cmd_exec()
     -e "s/^P  .*/$c_gr&$c_reset/" \
     -e "s/^U  .*/$c_re&$c_reset/" \
 \
-    -e "s/^M  .*/$c_bl&$c_reset/" \
-    -e "s/^D  .*/$c_re&$c_reset/" \
-    -e "s/^A  .*/$c_cy&$c_reset/" \
-    -e "s/^C  .*/$c_ma&$c_reset/" \
+    -e "s/^M. .*/$c_bl&$c_reset/" \
+    -e "s/^D. .*/$c_re&$c_reset/" \
+    -e "s/^A. .*/$c_cy&$c_reset/" \
+    -e "s/^C. .*/$c_ma&$c_reset/" \
     -e "s/^=> .*/$c_bl&$c_reset/" \
 \
     -e "s/^@@ .* @@/$c_gr&$c_reset/" \

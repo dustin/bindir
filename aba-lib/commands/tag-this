@@ -7,7 +7,7 @@
 . "$abadir/aba-lib"
 cmd_exec()
 {
-  tla tag -S `aba_tree_revision` $1 
+  aba_tag_this $1 
 }
 cmd_desc()
 {

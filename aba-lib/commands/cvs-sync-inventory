@@ -21,7 +21,11 @@ EOH
 }
 
 # extended help for aba command -H or aba help command
-cmd_ext_help () :
+cmd_ext_help () 
+{
+    cat <<EOH
+EOH
+}
 
 log () {
     echo "* $*"

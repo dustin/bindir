@@ -1,0 +1,64 @@
+#! /bin/sh
+## Copyright (C) 2004 Aaron Bentley
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+# executes the command ("$@" are the arguments after the command name)
+cmd_exec()
+{
+owd=$(tla tree-root)
+if [ $? -ne 0 ]; then
+  aba_panic "Not a project tree"
+fi
+revision=$(aba_tree_revision)
+if [ $? -ne 0 ]; then
+  aba_panic "Can't determine last revision"
+fi
+location=$(tla library-find $revision)
+if [ $? -ne 0 ]; then
+  if tla library-add $revision; then
+    location=$(tla library-find $revision)
+  else
+    aba_panic "Can't find library revision for $revision"
+  fi
+fi
+
+cd $location
+for i in $(tla inventory -s); do
+  if [ ! -f $owd/$i ]; then
+    echo $i
+    cp -p $i $owd/$i 
+  fi 
+done
+}
+
+# one-liner description for aba help
+cmd_desc()
+{
+    aba_desc $(basename $0) "Restores deleted files"
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+Restores deleted files
+usage: $abaname $(basename $0)
+
+Makes fresh copies of all files that have been deleted since the last commit.
+All other files are ignored.
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+EOH
+}	
+
+aba_run "$@"
+#  arch-tag: undelete by Aaron Bentley  (09:55 Jun 18 2004)

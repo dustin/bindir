@@ -9,29 +9,23 @@
 # executes the command ("$@" are the arguments after the command name)
 cmd_exec()
 {
-  if [ -z "$1" ]; then
-    echo No star-merge version/revision specified >&2
-    exit 1
-  fi
-  aba_star_merge_undo "$@"
+  diff -u $(tla file-find $1 $(aba_full_revision $2)) $(tla file-find projectlanguage.cpp $(aba_full_revision $3))
 }
 
 # one-liner description for aba help
 cmd_desc()
 {
-    aba_desc $(basename $0) "reverts the changes from a star-merge"
+    aba_desc $(basename $0) "Compare two revisions of a file"
 }
 
 # short help for aba command -h, --help
 cmd_help()
 {
     cat <<EOH
-reverts the changes from a star-merge
-usage: $abaname $(basename $0) [options] [FROM]
+Description...
+usage: $abaname $(basename $0) file [revision] [revision]
 
-All star-merge options may be used, except for --changes
-Only the changes from the star-merge are reverted.  All other changes will 
-remain.
+Omitted revisions will default to the tree revision.  Patchlevels are fine.
 EOH
 }
 
@@ -43,4 +37,4 @@ EOH
 }	
 
 aba_run "$@"
-# arch-tag: star-merge-undo by Aaron Bentley  (23:25 Mar 10 2004)
+#  arch-tag: file-diff-rev by Aaron Bentley  (11:40 May 12 2004)

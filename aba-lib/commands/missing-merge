@@ -9,29 +9,28 @@
 # executes the command ("$@" are the arguments after the command name)
 cmd_exec()
 {
-  if [ -z "$1" ]; then
-    echo No star-merge version/revision specified >&2
-    exit 1
-  fi
-  aba_star_merge_undo "$@"
+  aba_merge_source $1
+  for source in $sourcever; do
+    tla missing -sf $source
+  done
 }
 
 # one-liner description for aba help
 cmd_desc()
 {
-    aba_desc $(basename $0) "reverts the changes from a star-merge"
+    aba_desc $(basename $0) "Does \"tla missing -sf\" for merge sources"
 }
 
 # short help for aba command -h, --help
 cmd_help()
 {
     cat <<EOH
-reverts the changes from a star-merge
-usage: $abaname $(basename $0) [options] [FROM]
+Does "tla missing -sf" for merge sources
+usage: $abaname $(basename $0) [VERSION]
 
-All star-merge options may be used, except for --changes
-Only the changes from the star-merge are reverted.  All other changes will 
-remain.
+Determines merge-sources the same way as "merge" (argument, =partner-versions,
+++merge-source) and lists missing revisions by full name with summaries
+
 EOH
 }
 
@@ -43,4 +42,4 @@ EOH
 }	
 
 aba_run "$@"
-# arch-tag: star-merge-undo by Aaron Bentley  (23:25 Mar 10 2004)
+#  arch-tag: missing-merge by Aaron Bentley  (11:25 May 31 2004)

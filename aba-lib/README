@@ -57,6 +57,10 @@ tom=lord@emf.net--2004/tla--devo--1.2
 
 Or you can use "aba alias" to list or add aliases
 
+I've just added support for per-tree aliases, like Stefan Monnier wanted for
+tla.  To create them, you'll need to create a file named ++aliases in the tree
+root.  Sorry, "aba alias" doesn't support them yet.
+
 They can then be used on the command line like this:
 aba get ^tom--patch-35
 (the ^ can be overridden by defining an alias

@@ -7,9 +7,9 @@
 . "$abadir/aba-lib"
 cmd_exec()
 {
-  aba tag-this $1
-  aba sync-tree $1--base-0
-  aba set-tree-version $1
+  aba_tag_this $1 
+  tla sync-tree $1--base-0
+  tla set-tree-version $1
 }
 cmd_desc()
 {

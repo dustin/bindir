@@ -13,11 +13,17 @@ Jan Hudec
   * Added helper functions
   * Added commands
 
+Mike Hearn
+  * Fixed aba behaviour if no arguments supplied
+
+Robin Green
+  * Added "revert" command
+
 Johannes Martin Berg
   * Added "export" command
 
 Aaron Bentley
   * Originally threw this script together
 
-
+ 
 arch-tag: CREDITS by Aaron Bentley  (19:31 Feb 12 2004)

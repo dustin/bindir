@@ -1,0 +1,51 @@
+#! /bin/sh
+## Copyright (C) 2004 Aaron Bentley
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+# executes the command ("$@" are the arguments after the command name)
+cmd_exec()
+{
+  mirrors=$(aba mirrors --local $1)
+  for archive in $mirrors; do
+    versions=$(aba package-versions --library --revisions $archive)
+    for version in $versions; do
+      echo Mirroring $archive/$version
+      tla archive-mirror $archive-SOURCE $archive $version
+    done
+  done
+}
+
+# one-liner description for aba help
+cmd_desc()
+{
+    aba_desc $(basename $0) "Updates mirrors for revisions in library"
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+Updates mirrors for revisions in library
+usage: $abaname $(basename $0) [archive]
+
+This script allows local mirrors to act a little more like caches.  We assume
+that the user is interested in those revisions that are present in the revision
+library.  So any versions for local mirrors that have revisions in the library
+are updated from their sources.
+
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+EOH
+}	
+
+aba_run "$@"
+#  arch-tag: partial-mirror by Aaron Bentley  (10:40 Apr 26 2004)

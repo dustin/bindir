@@ -1,0 +1,50 @@
+#! /bin/sh
+## Copyright (C) 2004 Aaron Bentley
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+# executes the command ("$@" are the arguments after the command name)
+cmd_exec()
+{
+  rev_ver=$(aba_revision_or_version $@)
+  archive=$(tla parse-package-name -a $rev_ver)
+  pversion=$(tla parse-package-name --package-version $rev_ver)
+  if [ -n $(tla archives --names $archive-SOURCE) ]; then
+    tla archive-mirror $archive-SOURCE $archive $pversion
+  fi
+  tla update $@
+}
+
+# one-liner description for aba help
+cmd_desc()
+{
+    aba_desc $(basename $0) "Update from a mirror"
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+Update from a mirror
+usage: $abaname $(basename $0) [revision/version]
+
+If the archive for the version is a local mirror, update it before running tla
+update, using the version as a limit.  If unspecified, archive defaults to
+default archive.  If revision or version unspecified, defaults to tree version.
+No options accepted.
+
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+EOH
+}	
+
+aba_run "$@"
+#  arch-tag: mupdate by Aaron Bentley  (09:38 Apr 27 2004)

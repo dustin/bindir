@@ -1,0 +1,48 @@
+#! /bin/sh
+## Copyright (C) 2004 Aaron Bentley
+##
+## See the file "COPYING" for further information about
+## the copyright and warranty status of this work.
+
+. "$abadir/aba-lib"
+
+# executes the command ("$@" are the arguments after the command name)
+cmd_exec()
+{
+  revision=$(aba_full_revision $1)
+  aba_try tla replay --reverse $revision
+  aba_try tla sync-tree $revision
+}
+
+# one-liner description for aba help
+cmd_desc()
+{
+    aba_desc $(basename $0) "remove a patch, keeping its log"
+}
+
+# short help for aba command -h, --help
+cmd_help()
+{
+    cat <<EOH
+remove a patch, keeping its log
+usage: $abaname $(basename $0) revision
+
+When a patch is removed with replay --reverse, its patchlog is removed, which
+means that the patch is considered "missing", not deliberately reoved.  This
+command restores the patchlog after reversing.
+
+EOH
+}
+
+# extended help for aba command -H or aba help command
+cmd_ext_help()
+{
+    cat <<EOH
+If you later decide to accept a previously-rejected patch, you can simply reject
+the patch you created when you originally rejected it.
+
+EOH
+}	
+
+aba_run "$@"
+# arch-tag: reject by Aaron Bentley  (01:09 Apr 11 2004)

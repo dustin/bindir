@@ -9,33 +9,7 @@ export ABAFILTER
 . "$abadir/aba-lib"
 cmd_exec()
 {
-  sourcefile=`tla tree-root 2> /dev/null`/++merge-source 
-  if [ $? -ne 0 ]; then
-      echo "merge: not in project tree ($(pwd))" >&2
-      exit 2;
-    exit 1
-  fi
-  if [ -n "$1" ]; then
-    sourcever=$1;
-    sourcetype="[supplied]"
-  elif [ -f $sourcefile ] ; then
-    sourcever=$(cat $sourcefile)
-    sourcetype="[from ++merge-source]"
-  else
-    treesource=$(aba_tree_source)
-    status=$?;
-    # always false
-    if [ $status -eq 2 ]; then
-      echo "merge: not in project tree ($(pwd))" >&2
-      exit 2;
-    fi
-    if [ $status -ne 0 ]; then
-      echo "aba merge: Unable to find $sourcefile" or tag source >&2
-      exit 1;
-    fi
-    sourcever="$(tla parse-package-name -a $treesource)/$(tla parse-package-name --package-version $treesource)"
-    sourcetype="[from tag-source]"
-  fi
+  aba_merge_source $1
   aba_no_changes
   for source in $sourcever; do
   echo "* merge source $sourcetype: $source"
@@ -55,7 +29,7 @@ cmd_exec()
 }
 cmd_desc()
 {
-  echo '                       merge : star-merge with ++merge-source, then edit log'
+  echo '                       merge : star-merge with =partner-versions, then edit log'
 }
 cmd_help()
 {
@@ -65,8 +39,9 @@ usage: $abaname merge [version]
 
 Selects the source version from (in order of selection):
 1. The supplied version
-2. The contents of ++merge-source in the project tree root
-3. The tag-source of the project tree, as determined from the patch-logs
+2. The contents of =partner-versions in {arch}
+3. The contents of ++merge-source in the project tree root
+4. The tag-source of the project tree, as determined from the patch-logs
 
 It will not perform the merge if there are uncommitted changes in the tree.
 
@@ -77,9 +52,9 @@ a log message.
 
 If the merge was successfully applied, but did not change the tree, it will say so.
 
-++merge-source may contain multiple merge sources, separated by whitespace.
-In this case, each source will be tried in order, stopping at the first merge
-that actually changes the tree.
+++merge-source or =partner-versions may contain multiple merge sources,
+separated by whitespace.  In this case, each source will be tried in order,
+stopping at the first merge that actually changes the tree.
 
 EOH
 }

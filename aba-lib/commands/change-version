@@ -7,10 +7,7 @@
 . "$abadir/aba-lib"
 cmd_exec()
 {
-  aba_no_changes
-  aba_try tla sync-tree $1
-  aba_try tla set-tree-version $1
-  aba_try tla undo -n
+  aba_change_version $1
 }
 cmd_desc()
 {

@@ -19,7 +19,7 @@ cmd_exec()
 		exit 1
 	fi
  
-        if [ $1 = "--source" ]; then
+        if [ "$1" = "--source" ]; then
 	        local source="$1 $2";
 		local archive=$3;
         else

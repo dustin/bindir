@@ -4,6 +4,7 @@
 # See the file "COPYING" for further information about
 # the copyright and warranty status of this work.
 
+# Runs a standard aba command
 aba_run()
 {
 if [ -z "$abaname" ]; then
@@ -35,6 +36,8 @@ case "$1" in
 esac
 }
 
+# Runs a command that functions as a tla wrapper
+# The difference from aba_run is the handling of extended help
 aba_run_tlawrap()
 {
 if [ -z "$abaname" ]; then
@@ -65,7 +68,8 @@ case "$1" in
 esac
 }
 
-
+# Outputs the tag source of the current tree, according to patch-logs
+# May be wrong under certain contrived circumstances
 aba_tree_source()
 {
   logs=$(tla logs 2>/dev/null)
@@ -80,9 +84,35 @@ aba_tree_source()
   echo $tagsource
 }
 
+#Converts a fully-qualified revision to a fully-qualified version
+aba_fqversion()
+{
+  echo $(tla parse-package-name -a $1)/$(tla parse-package-name --package-version $1)
+}
 
+# Outputs a full revision name; input may be either
+# a full revision name
+# a patchlevel refering to the current tree version
+aba_revision_or_version()
+{
+  name=$(aba_full_revision $@)
+  if [ -z "$name" ]; then
+    if tla valid-package-name -p -v $1; then
+      name=$1
+    fi
+  fi
+  echo $name
+}
+
+# Outputs a full revision name; input may be either
+# a full revision name
+# a patchlevel refering to the current tree version
 aba_full_revision()
 {
+  if [ -z "$1" ]; then
+    aba_tree_revision
+    return $?
+  fi
   if tla valid-package-name -p -v --lvl $1; then
     echo $1
   else
@@ -93,13 +123,19 @@ aba_full_revision()
   fi
 }
 
+# Executes the given command, omitting the last $1 lines
+# $1 is the number of lines
+#
 aba_omit_last()
 {
   n=$1;
   shift;
-  local lines="$(expr $("$@" | wc -l) - $n)"
-  "$@" | head  -n $lines
+  my_local_lines="$(expr $("$@" | wc -l) - $n)"
+  "$@" | head  -n $my_local_lines
+  unset my_local_lines
 }
+
+# Outputs a tla-style command description 
 aba_desc()
 {
   cmd=$1;
@@ -107,6 +143,7 @@ aba_desc()
   printf "%28s : %s\n" $cmd "$*"
 }
 
+# Creates a temporary directory and outputs its filename
 aba_mktempdir()
 {
   if [ -z "$TMPDIR" ]; then
@@ -119,6 +156,7 @@ aba_mktempdir()
   fi
 }
 
+# Outputs a temporary filename
 aba_mktemp()
 {
   if [ -z "$TMPDIR" ]; then
@@ -130,14 +168,19 @@ aba_mktemp()
     exit 2
   fi
 }
+
+# Attempts to execute a command, panics if returns non-zero
 aba_try()
 {
-  $@
+  "$@"
   if [ $? -ne 0 ] ; then
     echo PANIC: failed to execute $@ >&2
     exit 2
   fi
 }
+
+# Undoes a star-merge
+# Takes the same parameters as star-merge (except --changes)
 aba_star_merge_undo()
 {
   tmp=$(aba_mktempdir)
@@ -159,10 +202,13 @@ aba_star_merge_undo()
   return $status
 }
 
+# Outputs the project tree revision
 aba_tree_revision()
 {
   tla logs -d "${1:-.}" -r -f | head -n 1
 }
+
+# Break any links that the given file may have
 aba_break_link()
 {
    cp -p $1 '++brokelink' && mv '++brokelink' $1
@@ -172,7 +218,7 @@ aba_break_link()
    fi
 }
 
-
+# Ensure that the project tree has no uncommitted changes
 aba_no_changes ()
 {
   tla changes > /dev/null
@@ -186,4 +232,81 @@ aba_no_changes ()
   fi
 }
 
+# Determine whether a command supports a given option (long form required)
+aba_supports_option()
+{
+  tla $1 -h | grep -- "--$2" >/dev/null
+  return $?
+}
+
+# Echoes message to stderr, exits with status 2
+aba_panic()
+{
+  echo $@ >&2
+  exit 2
+}
+
+aba_merge_source()
+{
+  tree_root=`tla tree-root 2> /dev/null`
+  if [ $? -ne 0 ]; then
+      echo "not in project tree ($(pwd))" >&2
+      exit 2;
+    exit 1
+  fi
+  if [ -f $tree_root/{arch}/+partner-versions ]; then
+    partnerfile=$tree_root/{arch}/+partner-versions 
+  else 
+    partnerfile=$tree_root/{arch}/=partner-versions
+  fi
+  mergefile=$tree_root/++merge-source 
+  if [ -n "$1" ]; then
+    sourcever=$1;
+    sourcetype="[supplied]"
+  elif [ -f $partnerfile ] ; then
+    sourcever=$(cat $partnerfile)
+    sourcetype="[from partner-versions]"
+  elif [ -f $mergefile ] ; then
+    sourcever=$(cat $mergefile)
+    sourcetype="[from ++merge-source]"
+  else
+    treesource=$(aba_tree_source)
+    status=$?;
+    # always false
+    if [ $status -eq 2 ]; then
+      echo "merge: not in project tree ($(pwd))" >&2
+      exit 2;
+    fi
+    if [ $status -ne 0 ]; then
+      echo "aba merge: Unable to find $sourcefile" or tag source >&2
+      exit 1;
+    fi
+    sourcever="$(tla parse-package-name -a $treesource)/$(tla parse-package-name --package-version $treesource)"
+    sourcetype="[from tag-source]"
+  fi
+}
+aba_tag_this()
+{
+  tla tag -S `aba_tree_revision` $1 
+}
+aba_change_version()
+{
+  root=$(tla tree-root)
+  if [ $? -ne 0 ]; then
+    aba_panic "Unable to determine tree root"
+  fi
+  from=$(aba_tree_revision)
+  if [ $? -ne 0 ]; then
+    aba_panic "Unable to determine tree revision"
+  fi
+  to=$(tla revisions -f $1|tail -n 1)
+  if [ $? -ne 0 ]; then
+    aba_panic "Unable to determine target revision"
+  fi
+  if [ -z "$to" ]; then
+    aba_panic "Unable to determine target revision"
+  fi
+  aba_try tla apply-delta --dir $root $from $to
+  aba_try tla set-tree-version $1
+}
 # arch-tag: runner by Aaron Bentley (07:50 Jan 19, 2004)

@@ -8,7 +8,7 @@
 cmd_exec()
 {
   if [ -n "$1" ]; then
-    revision=$(aba_full_revision $1) 
+    revision=$(aba_revision_or_version $1)
   fi
   tla changes --diffs $revision
 }

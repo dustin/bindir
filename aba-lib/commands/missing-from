@@ -9,29 +9,31 @@
 # executes the command ("$@" are the arguments after the command name)
 cmd_exec()
 {
-  if [ -z "$1" ]; then
-    echo No star-merge version/revision specified >&2
-    exit 1
-  fi
-  aba_star_merge_undo "$@"
+    ver=$2
+    if [ -z $2 ]; then
+      ver=$(tla tree-version)
+    fi
+
+    dir=$(tla library-find $1)
+    tla missing -s -d $dir $ver
 }
 
 # one-liner description for aba help
 cmd_desc()
 {
-    aba_desc $(basename $0) "reverts the changes from a star-merge"
+    aba_desc $(basename $0) "Inverted version of missing"
 }
 
 # short help for aba command -h, --help
 cmd_help()
 {
     cat <<EOH
-reverts the changes from a star-merge
-usage: $abaname $(basename $0) [options] [FROM]
+Inverted version of missing
+usage: $abaname $(basename $0) REVISION [VERSION]
 
-All star-merge options may be used, except for --changes
-Only the changes from the star-merge are reverted.  All other changes will 
-remain.
+Shows which revisions of VERSION are missing from REVISION.  Version defaults
+to the current tree-version.
+
 EOH
 }
 
@@ -43,4 +45,4 @@ EOH
 }	
 
 aba_run "$@"
-# arch-tag: star-merge-undo by Aaron Bentley  (23:25 Mar 10 2004)
+#  arch-tag: missing-from by Aaron Bentley  (23:04 Jun 04 2004)

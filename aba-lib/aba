@@ -73,6 +73,11 @@ EOS
 
     # This runs in subshell due to round brackets.
     expand_alias () (
+    	if [ -n "$treeroot" ]; then
+	  if [ -f $treeroot/++aliases ]; then
+	    . $treeroot/++aliases
+	  fi
+	fi
 	. ~/.aba/aliases
 	eval "printf '%s' \"$(prepare_alias "$1")\""
     )
@@ -93,10 +98,10 @@ EOS
     done
 fi
 
-if [ -x ~/.aba/commands/$cmd ] && [ ! -d ~/.aba/commands/$cmd ]; then
+if [ ! -z "$cmd" ] &&  [ -x ~/.aba/commands/$cmd ] && [ ! -d ~/.aba/commands/$cmd ]; then
 #    echo ~/.aba/commands/$cmd exec $prefix "$@"
     ~/.aba/commands/$cmd exec $prefix "$@"
-elif [ -x "$abadir/commands/$cmd" ] && [ ! -d ~/.aba/commands/$cmd ]; then
+elif [ ! -z "$cmd" ] &&  [ -x "$abadir/commands/$cmd" ] && [ ! -d "$abadir/commands/$cmd" ]; then
 #    echo "$abadir/commands/$cmd" exec $prefix "$@"
     "$abadir/commands/$cmd" exec $prefix "$@"
 else
