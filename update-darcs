@@ -1,0 +1,20 @@
+#!/bin/sh
+
+umask 22
+
+PATHS=`echo *`
+
+if [ $# -gt 0 ]
+then
+	PATHS="$@"
+fi
+
+for i in $PATHS
+do
+	if [ -f "$i/_darcs/prefs/defaultrepo" ]
+	then
+		cd "$i"
+		echo "Pulling $i"
+		darcs pull -v -a
+	fi
+done
