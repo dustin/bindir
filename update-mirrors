@@ -15,6 +15,7 @@ do
 	then
 		echo "Skipping $a"
 	else
+		echo "Mirroring $a"
 		# Allow for optional limits per-archive.
 		if [ -f ${HOME}/.arch-params/=mirror-limits/$a ]
 		then
