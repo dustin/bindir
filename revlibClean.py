@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     # Start digging...
     for arch in getLines("tla library-archives"):
-        debug("Checking arch" + arch)
+        debug("Checking archive " + arch)
         for cat in getLines("tla library-categories " + arch):
             debug("\tcat: " + cat)
             for b in getLines("tla library-branches " + arch + "/" + cat):
