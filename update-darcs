@@ -2,6 +2,7 @@
 
 umask 22
 
+TOP=$PWD
 PATHS=`echo *`
 
 if [ $# -gt 0 ]
@@ -16,5 +17,6 @@ do
 		cd "$i"
 		echo "Pulling $i"
 		darcs pull -v -a
+		cd "$PWD"
 	fi
 done
