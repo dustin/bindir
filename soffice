@@ -1,6 +1,0 @@
-#!/bin/sh
-
-LD_LIBRARY_PATH=/Applications/OpenOffice.org1.0/program/filter:/usr/X11R6/lib
-export LD_LIBRARY_PATH
-
-cd /Applications/OpenOffice.org1.0/program && sh soffice
