@@ -47,6 +47,12 @@ def libRemove(torm):
     if estat != 0:
         print "Non-zero exit status:  " + `estat`
 
+# Remove all candidates
+def checkCandidateAll(revlib, arch, cat, branch, ver, rev):
+    torm=arch + "/" + ver + "--" + rev
+    libRemove(torm)
+
+# Remove candidates interactively
 def checkCandidateInteractive(revlib, arch, cat, branch, ver, rev):
     torm=arch + "/" + ver + "--" + rev
     sys.stdout.write("Should we remove " + torm + " [y/n] ")
@@ -55,6 +61,7 @@ def checkCandidateInteractive(revlib, arch, cat, branch, ver, rev):
     if shouldGo[0] == 'y':
         libRemove(torm)
 
+# Remove candidates automatically
 def checkCandidateAuto(revlib, arch, cat, branch, ver, rev):
     age=getAge(os.path.join(revlib, arch, cat, branch, ver,
         ver + "--" + rev))
@@ -86,13 +93,15 @@ checkCandidate = checkCandidateAuto
 if __name__ == '__main__':
     revlib=getLines("tla my-revision-library")[0]
 
-    opts, args=getopt.getopt(sys.argv[1:], 'vi')
+    opts, args=getopt.getopt(sys.argv[1:], 'via')
 
     for opt in opts:
         if opt[0] == '-v':
             _debug = True
         elif opt[0] == '-i':
             checkCandidate = checkCandidateInteractive
+        elif opt[0] == '-a':
+            checkCandidate = checkCandidateAll
 
     debug("Revlib: " + `revlib`)
 
