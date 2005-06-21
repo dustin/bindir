@@ -13,7 +13,7 @@ logger=net.spy.log.DefaultLogger
 # -Dorg.apache.commons.logging.simplelog.log.httpclient.wire=trace \
 # -Dorg.apache.commons.logging.simplelog.log.org.apache.commons.httpclient=debug \
 
-"/System/Library/Frameworks/JavaVM.framework/Home/bin/java" \
+"java" \
 	-Dnet.spy.log.LoggerImpl=$logger \
 	-Dpython.home="/Users/dustin/lib/java/jython-2.1" \
 	-classpath "/Users/dustin/lib/java/jython-2.1/jython.jar:$CLASSPATH" \
