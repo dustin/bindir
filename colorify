@@ -3,6 +3,7 @@
 for i in "$@"
 do
 	vim -e \
+		-c "set nu" \
 		-c "set bg=dark" \
 		-c 'so $VIMRUNTIME/syntax/2html.vim' \
 		-c "w" \
