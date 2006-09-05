@@ -3,11 +3,13 @@
 umask 22
 
 TOP=`pwd`
-PATHS=`echo *`
+PATHS=""
 
 if [ $# -gt 0 ]
 then
 	PATHS="$@"
+else
+	PATHS=`find * -type d -name _darcs | xargs -n 1 dirname`
 fi
 
 for i in $PATHS
