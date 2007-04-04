@@ -1,0 +1,23 @@
+#!/bin/sh
+
+project=$1
+if [ "$project" = "" ]
+then
+	echo "Project argument required"
+	exit 1
+fi
+
+if [ ! -d .hg ]
+then
+	echo "You're not in an hg directory"
+	exit 1
+fi
+
+sed "s/@PROJECT@/$project/g" > .hg/hgrc << EOF
+[paths]
+default = http://rubik.west.spy.net/hg/@PROJECT@/
+default-push = ssh://rubik.west.spy.net/prog/hg/@PROJECT@/
+
+[ui]
+remotecmd = /usr/local/bin/hg
+EOF
