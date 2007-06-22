@@ -15,8 +15,8 @@ fi
 
 sed "s,@PROJECT@,$project,g" > .hg/hgrc << EOF
 [paths]
-default = http://rubik.west.spy.net/hg/@PROJECT@/
-default-push = ssh://rubik.west.spy.net/prog/hg/@PROJECT@/
+default = http://hg.west.spy.net/hg/@PROJECT@/
+default-push = ssh://hg.west.spy.net/prog/hg/@PROJECT@/
 
 [ui]
 remotecmd = /usr/local/bin/hg
