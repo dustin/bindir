@@ -1,0 +1,13 @@
+#!/bin/sh
+
+progdir=$HOME/prog
+
+for d in `find $progdir -type d -name .hg -prune | xargs -n1 dirname`
+do
+	if grep west.spy.net $d/.hg/hgrc > /dev/null
+	then
+		echo "Checking $d"
+		cd $d
+		hg outgoing
+	fi
+done
