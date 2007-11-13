@@ -2,5 +2,8 @@
 
 rsync "$@" -varltpogS --progress --stats \
 	--delete --delete-excluded --exclude .DS_Store \
-	--exclude="*.m4p" --exclude="*.m4a" \
+	--exclude=Podcasts/ \
+	--exclude=Coverville/ \
 	"$HOME/Music/iTunes/iTunes Music/" purple::${USER}mp3w/
+
+# --exclude="*.m4p" --exclude="*.m4a" \
