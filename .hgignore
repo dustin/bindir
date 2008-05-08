@@ -1,7 +1,0 @@
-(^|/)\{arch\}($|/)
-(^|/)\.hg($|/)
-(^|/)\.hgtags($|/)
-^bindirs.log$
-^bindirs.state$
-^bindirs.state.old$
-^bindirs.state.journal$
