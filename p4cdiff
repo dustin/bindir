@@ -68,5 +68,3 @@ sub exe {
 }
 
 exe(@ARGV[1 .. $#ARGV]);
-
-# arch-tag: 689f32af-bac3-4621-8697-fd29951bb777

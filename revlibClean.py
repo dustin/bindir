@@ -2,7 +2,6 @@
 """
 
 Copyright (c) 2004  Dustin Sallings <dustin@spy.net>
-arch-tag: B06B5B4A-1007-11D9-9AEF-000A957659CC
 """
 
 import getopt
