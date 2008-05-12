@@ -1,4 +1,4 @@
 #!/bin/sh
 
-git add .
+git add -u .
 git ls-files -m | xargs git rm
