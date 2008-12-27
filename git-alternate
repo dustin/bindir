@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+from __future__ import with_statement
+
+import os
+import sys
+import commands
+import exceptions
+
+def nearest_git_objects(path):
+	dotgit = os.path.join(path, ".git")
+	objects = os.path.join(path, "objects")
+	if os.path.isdir(dotgit):
+		return nearest_git_objects(dotgit)
+	elif os.path.isdir(objects):
+		return objects
+	raise exceptions.RuntimeError("Could not find git dir from " + path)
+
+def setup_alternates(from_objects, to_objects):
+	with open(os.path.join(from_objects, "info", "alternates"), "a") as f:
+		f.write(to_objects + "\n")
+
+if __name__ == '__main__':
+	alt = nearest_git_objects(sys.argv[1])
+	(e, o) = commands.getstatusoutput("git rev-parse --git-dir")
+	if e != 0:
+		raise exceptions.RuntimeError("This is not a git repo.")
+	loc = nearest_git_objects(o.strip())
+	print loc, "->", alt
+	setup_alternates(loc, alt)
