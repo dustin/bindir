@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: et
 
 from __future__ import with_statement
 
@@ -8,29 +9,29 @@ import commands
 import exceptions
 
 def nearest_git_objects(path):
-	dotgit = os.path.join(path, ".git")
-	objects = os.path.join(path, "objects")
-	if os.path.isdir(dotgit):
-		return nearest_git_objects(dotgit)
-	elif os.path.isdir(objects):
-		return objects
-	raise exceptions.RuntimeError("Could not find git dir from " + path)
+    dotgit = os.path.join(path, ".git")
+    objects = os.path.join(path, "objects")
+    if os.path.isdir(dotgit):
+        return nearest_git_objects(dotgit)
+    elif os.path.isdir(objects):
+        return objects
+    raise exceptions.RuntimeError("Could not find git dir from " + path)
 
 def setup_alternates(from_objects, to_objects):
-	fn = os.path.join(from_objects, "info", "alternates")
-	alts=set()
-	if os.path.exists(fn):
-		with open(fn) as f:
-			alts = set([l.strip() for l in f.readlines()])
-	alts.add(to_objects)
-	with open(os.path.join(from_objects, "info", "alternates"), "w") as f:
-		f.write("\n".join(alts) + "\n")
+    fn = os.path.join(from_objects, "info", "alternates")
+    alts=set()
+    if os.path.exists(fn):
+        with open(fn) as f:
+            alts = set([l.strip() for l in f.readlines()])
+    alts.add(to_objects)
+    with open(os.path.join(from_objects, "info", "alternates"), "w") as f:
+        f.write("\n".join(alts) + "\n")
 
 if __name__ == '__main__':
-	alt = nearest_git_objects(sys.argv[1])
-	(e, o) = commands.getstatusoutput("git rev-parse --git-dir")
-	if e != 0:
-		raise exceptions.RuntimeError("This is not a git repo.")
-	loc = nearest_git_objects(o.strip())
-	print loc, "->", alt
-	setup_alternates(loc, alt)
+    alt = nearest_git_objects(sys.argv[1])
+    (e, o) = commands.getstatusoutput("git rev-parse --git-dir")
+    if e != 0:
+        raise exceptions.RuntimeError("This is not a git repo.")
+    loc = nearest_git_objects(o.strip())
+    print loc, "->", alt
+    setup_alternates(loc, alt)
