@@ -17,8 +17,14 @@ def nearest_git_objects(path):
 	raise exceptions.RuntimeError("Could not find git dir from " + path)
 
 def setup_alternates(from_objects, to_objects):
-	with open(os.path.join(from_objects, "info", "alternates"), "a") as f:
-		f.write(to_objects + "\n")
+	fn = os.path.join(from_objects, "info", "alternates")
+	alts=set()
+	if os.path.exists(fn):
+		with open(fn) as f:
+			alts = set([l.strip() for l in f.readlines()])
+	alts.add(to_objects)
+	with open(os.path.join(from_objects, "info", "alternates"), "w") as f:
+		f.write("\n".join(alts) + "\n")
 
 if __name__ == '__main__':
 	alt = nearest_git_objects(sys.argv[1])
