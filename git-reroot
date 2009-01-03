@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+"""
+Pick up all of the changes of a tree and reparent them elsewhere.
+
+Given some arbitrary sequence of commits, all of the changes from the
+sequence will be applied in the new location.
+
+This has an effect similar to rebase, but is purely content driven.
+Each commit is recorded with the exact state the tree was in, but
+repositioned on top of the current tree.  This is likely the wrong
+tool for whatever job you're hoping to use it on.
+
+It will never have a conflict, but at the consequence of sometimes
+providing you with diffs that don't make a lot of sense.
+"""
+
+import os
+import sys
+import commands
+import subprocess
+
+def run_cmd(cmd):
+    exitstatus, outtext = commands.getstatusoutput(cmd)
+    if exitstatus != 0:
+        raise RuntimeException("Command failed.")
+    return outtext
+
+def cleanup_commit(commit, c):
+    return c[:c.index("--" + commit + "--")]
+
+def recommit(commit, onto, tree):
+    parts = run_cmd('git show --raw '
+                    '--pretty=format:"%an%n%ae%n%ad%n%cn%n%ce%n%cd%n%s%n%n%b--%H--" '
+                    + commit).split("\n", 6)
+    an, ae, ad, cn, ce, cd, c = parts
+    c = cleanup_commit(commit, c)
+    env = {'GIT_COMMITTER_NAME': cn, 'GIT_COMMITER_EMAIL': ce,
+           'GIT_AUTHOR_NAME': an, 'GIT_AUTHOR_EMAIL': ae,
+           'GIT_COMMITER_DATE': cd, 'GIT_AUTHOR_DATE': ad,
+           'PATH': os.getenv("PATH")}
+    args=["git", "commit-tree", tree, '-p', onto]
+    p = subprocess.Popen(args, stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    stdout, stderr = p.communicate(c)
+    sys.stderr.write(stderr)
+    p.wait()
+    if p.returncode != 0:
+        sys.exit(p.returncode)
+
+    return stdout.strip()
+
+if __name__ == '__main__':
+
+    log = run_cmd('git log --reverse --pretty=format:"%%H %%T" %s'
+                  % sys.argv[1])
+    h = run_cmd("git rev-parse HEAD")
+    commits_and_trees=[s.split() for s in log.split("\n")]
+    done=0
+    for (commit, tree) in commits_and_trees:
+        h = recommit(commit, h, tree)
+        done += 1
+        sys.stdout.write("  %d/%d\r" % (done, len(commits_and_trees)))
+        sys.stdout.flush()
+
+    print "The newly created tree is available as " + h
