@@ -62,4 +62,4 @@ if __name__ == '__main__':
         sys.stdout.write("  %d/%d\r" % (done, len(commits)))
         sys.stdout.flush()
 
-    print "The newly created tree is available as " + h
+    print "The newly created history is available as " + h
