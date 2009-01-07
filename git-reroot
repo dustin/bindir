@@ -12,6 +12,9 @@ tool for whatever job you're hoping to use it on.
 
 It will never have a conflict, but at the consequence of sometimes
 providing you with diffs that don't make a lot of sense.
+
+Read more about this here:
+<http://dustin.github.com/2009/01/06/git-reroot.html>
 """
 
 import os
