@@ -17,9 +17,9 @@ from collections import defaultdict
 
 class TimeHisto(object):
 
-    def __init__(self, ref='HEAD'):
+    def __init__(self, log_args=['HEAD']):
         self.h = defaultdict(lambda: 0)
-        args = ['git', 'log', '--pretty=format:%at', ref]
+        args = ['git', 'log', '--pretty=format:%at'] + log_args
         sub = subprocess.Popen(args, stdout=subprocess.PIPE, close_fds=True)
 
         for l in sub.stdout:
@@ -57,9 +57,5 @@ class TimeHisto(object):
 
 
 if __name__ == '__main__':
-    ref = 'HEAD'
-    if len(sys.argv) > 1:
-        ref = sys.argv[1]
-
-    th = TimeHisto(ref)
+    th = TimeHisto(sys.argv[1:])
     subprocess.check_call(["open", th.to_gchart()])
