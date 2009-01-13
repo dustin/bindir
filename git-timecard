@@ -42,6 +42,7 @@ class TimeHisto(object):
             d.extend([i] * 24)
         chart.add_data(d)
 
+        day_names = "Sun Mon Tue Wed Thu Fri Sat".split(" ")
         days = (0, 6, 5, 4, 3, 2, 1)
 
         sizes=[]
@@ -51,8 +52,7 @@ class TimeHisto(object):
         chart.add_data(sizes)
 
         chart.set_axis_labels('x', [''] + [str(h) for h  in range(24)] + [''])
-        chart.set_axis_labels('y',
-                              ['', 'Sun', 'Sat', 'Fri', 'Thu', 'Wed', 'Tue', 'Mon', ''])
+        chart.set_axis_labels('y', [''] + [day_names[n] for n in days] + [''])
 
         chart.add_marker(1, 1.0, 'o', '333333', 25)
         return chart.get_url() + '&chds=-1,24,-1,7,0,20'
