@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# Create a new, empty branch in the current repo.
+#
+
+# Verify we're actually in a git repositoriy.
+git rev-parse --git-dir > /dev/null || exit 66
+
+# Ensure we have a branch name.
+if [ $# -ne 1 ]
+then
+    echo "What do you want to call this branch?"
+    exit 64
+fi
+
+refname=refs/heads/$1
+
+# Let's not clobber an existing branch.
+if git rev-parse --verify -q $refname > /dev/null
+then
+    echo "$refname already exists."
+    exit 65
+fi
+
+# Do the work.
+git symbolic-ref -m "Creating an empty branch" HEAD $refname \
+    || exit $?
+rm .git/index || exit $?
+git clean -df || exit $?
