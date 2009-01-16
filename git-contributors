@@ -16,6 +16,10 @@ from collections import defaultdict
 
 class Contributors(object):
 
+    width = 600
+    height = 300
+    max_entries = 6
+
     def __init__(self, log_args=['HEAD']):
         self.data=[]
         args = ['git', 'shortlog', '-sn'] + log_args
@@ -31,11 +35,11 @@ class Contributors(object):
 
     def to_gchart(self):
         from pygooglechart import PieChart3D
-        chart = PieChart3D(600, 300)
+        chart = PieChart3D(self.width, self.height)
 
-        data = self.data[:7]
+        data = self.data[:self.max_entries]
         remainder = 0
-        for d in self.data[7:]:
+        for d in self.data[self.max_entries:]:
             remainder += d[1]
         data.append(('Other', remainder))
 
