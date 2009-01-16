@@ -32,8 +32,15 @@ class Contributors(object):
     def to_gchart(self):
         from pygooglechart import PieChart3D
         chart = PieChart3D(600, 300)
-        chart.add_data([d[1] for d in self.data])
-        chart.set_pie_labels([d[0].split()[0] for d in self.data])
+
+        data = self.data[:7]
+        remainder = 0
+        for d in self.data[7:]:
+            remainder += d[1]
+        data.append(('Other', remainder))
+
+        chart.add_data([d[1] for d in data])
+        chart.set_pie_labels([d[0].split()[0] for d in data])
         return chart.get_url()
 
 if __name__ == '__main__':
