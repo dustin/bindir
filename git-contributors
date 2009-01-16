@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+"""Who works on this project?
+
+For printing a chart (the default), pygooglechart is required:
+
+ http://pygooglechart.slowchop.com/
+
+Note that this assumes you've got an OS-X style "open" command.  If
+you don't, it should be easy enough to adapt main to what you need.
+
+"""
+
+import sys
+import subprocess
+from collections import defaultdict
+
+class Contributors(object):
+
+    def __init__(self, log_args=['HEAD']):
+        self.data=[]
+        args = ['git', 'shortlog', '-sn'] + log_args
+        sub = subprocess.Popen(args, stdout=subprocess.PIPE, close_fds=True)
+
+        for l in sub.stdout:
+            commits, name = [x.strip() for x in l.split("\t")]
+            commits = int(commits)
+            self.data.append((name, commits))
+
+    def dump(self):
+        sys.stderr.write(repr(self.data) + "\n")
+
+    def to_gchart(self):
+        from pygooglechart import PieChart3D
+        chart = PieChart3D(600, 300)
+        chart.add_data([d[1] for d in self.data])
+        chart.set_pie_labels([d[0].split()[0] for d in self.data])
+        return chart.get_url()
+
+if __name__ == '__main__':
+    c = Contributors(sys.argv[1:])
+    # c.dump()
+    subprocess.check_call(["open", c.to_gchart()])
