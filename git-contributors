@@ -34,8 +34,8 @@ class Contributors(object):
         sys.stderr.write(repr(self.data) + "\n")
 
     def to_gchart(self):
-        from pygooglechart import PieChart3D
-        chart = PieChart3D(self.width, self.height)
+        from pygooglechart import PieChart2D
+        chart = PieChart2D(self.width, self.height)
 
         data = self.data[:self.max_entries]
         remainder = 0
