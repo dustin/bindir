@@ -11,41 +11,9 @@ you don't, it should be easy enough to adapt main to what you need.
 """
 
 import sys
-import subprocess
-from collections import defaultdict
 
-class Contributors(object):
-
-    width = 600
-    height = 300
-    max_entries = 6
-
-    def __init__(self, log_args=['HEAD']):
-        self.data=[]
-        args = ['git', 'shortlog', '-sn'] + log_args
-        sub = subprocess.Popen(args, stdout=subprocess.PIPE, close_fds=True)
-
-        for l in sub.stdout:
-            commits, name = [x.strip() for x in l.split("\t")]
-            commits = int(commits)
-            self.data.append((name, commits))
-
-    def dump(self):
-        sys.stderr.write(repr(self.data) + "\n")
-
-    def to_gchart(self):
-        from pygooglechart import PieChart2D
-        chart = PieChart2D(self.width, self.height)
-
-        data = self.data[:self.max_entries]
-        remainder = sum(d[1] for d in self.data[self.max_entries:])
-        data.append(('Other', remainder))
-
-        chart.add_data([d[1] for d in data])
-        chart.set_pie_labels([d[0].split()[0] for d in data])
-        return chart.get_url()
+import gitaggregates
 
 if __name__ == '__main__':
-    c = Contributors(sys.argv[1:])
-    # c.dump()
-    subprocess.check_call(["open", c.to_gchart()])
+    c = gitaggregates.Contributors(sys.argv[1:])
+    gitaggregates.open_chart(c)
