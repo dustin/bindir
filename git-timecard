@@ -19,7 +19,14 @@ class TimeHisto(object):
 
     def __init__(self, log_args=['HEAD']):
         self.h = defaultdict(lambda: 0)
-        args = ['git', 'log', '--pretty=format:%at'] + log_args
+        self.add_logs(None, log_args)
+
+    def add_logs(self, directory, log_args=['HEAD']):
+        args=['git']
+        if directory:
+            args.append('--git-dir=' + directory)
+        args.extend(['log', '--pretty=format:%at'])
+        args.extend(log_args)
         sub = subprocess.Popen(args, stdout=subprocess.PIPE, close_fds=True)
 
         for l in sub.stdout:
