@@ -28,20 +28,19 @@ if __name__ == '__main__':
     th = gitaggregates.TimeHisto()
     # Separate log args from repo args
     repos = []
-    log_args = None
+    log_args = []
+    current = repos
     for a in sys.argv[1:]:
-        if log_args is not None:
+        if log_args is current:
             log_args.append(a)
         else:
             if a == '--':
-                log_args = []
+                current = log_args
             else:
                 p = resolve(a)
                 if p:
                     repos.append(p)
 
-    if not log_args:
-        log_args = ['HEAD']
     th = gitaggregates.TimeHisto()
     for r in repos:
         th.add_logs(r, log_args)
