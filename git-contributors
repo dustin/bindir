@@ -38,9 +38,7 @@ class Contributors(object):
         chart = PieChart2D(self.width, self.height)
 
         data = self.data[:self.max_entries]
-        remainder = 0
-        for d in self.data[self.max_entries:]:
-            remainder += d[1]
+        remainder = sum(d[1] for d in self.data[self.max_entries:])
         data.append(('Other', remainder))
 
         chart.add_data([d[1] for d in data])
