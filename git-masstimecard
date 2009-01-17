@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+"""Show a timecard across all projects.
+
+For printing a chart (the default), pygooglechart is required:
+
+ http://pygooglechart.slowchop.com/
+
+Note that this assumes you've got an OS-X style "open" command.  If
+you don't, it should be easy enough to adapt main to what you need.
+"""
+
+import os
+import sys
+import exceptions
+
+import gitaggregates
+
+def resolve(path):
+    dotgit = os.path.join(path, ".git")
+    objects = os.path.join(path, "objects")
+    if os.path.isdir(dotgit):
+        return resolve(dotgit)
+    elif os.path.isdir(objects):
+        return path
+    sys.stderr.write("Warning: Can't find a git repo for %s\n" % path)
+
+if __name__ == '__main__':
+    th = gitaggregates.TimeHisto()
+    # Separate log args from repo args
+    repos = []
+    log_args = None
+    for a in sys.argv[1:]:
+        if log_args is not None:
+            log_args.append(a)
+        else:
+            if a == '--':
+                log_args = []
+            else:
+                p = resolve(a)
+                if p:
+                    repos.append(p)
+
+    if not log_args:
+        log_args = ['HEAD']
+    th = gitaggregates.TimeHisto()
+    for r in repos:
+        th.add_logs(r, log_args)
+
+    gitaggregates.open_chart(th)
