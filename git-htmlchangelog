@@ -22,12 +22,14 @@ def emit(prev, r, f=sys.stdout):
     tagdesc = read_tag(r)
 
     c = gitaggregates.Contributors([prev + '..' + r])
+    chart = c.mk_chart()
+    pie_url = chart.BASE_URL + '&amp;'.join(chart.get_url_bits())
     vdesc = "Changes from release %s to %s" % (prev, r)
     if not prev:
         vdesc = "Release " + r
     f.write("<h2>%s</h2>\n" % (vdesc))
     f.write("""<div><img class="pie" src="%s" alt="contributors"/>"""
-            % (c.to_gchart()))
+            % pie_url)
     f.write("<pre>%s</pre></div>" % tagdesc)
 
 if __name__ == '__main__':
@@ -36,7 +38,11 @@ if __name__ == '__main__':
         sys.stderr.write("Need to list some tag objects.\n")
         sys.exit(1)
 
-    print """<html>
+    print """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
 <head>
     <title>Changelog</title>
     <style type="text/css">

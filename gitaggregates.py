@@ -107,7 +107,7 @@ class Contributors(object):
     def dump(self):
         sys.stderr.write(repr(self.data) + "\n")
 
-    def to_gchart(self):
+    def mk_chart(self):
         from pygooglechart import PieChart2D
         chart = PieChart2D(self.width, self.height)
 
@@ -118,7 +118,10 @@ class Contributors(object):
 
         chart.add_data([d[1] for d in data])
         chart.set_pie_labels([d[0].split()[0] for d in data])
-        return chart.get_url()
+        return chart
+
+    def to_gchart(self):
+        return self.mk_chart().get_url()
 
 def open_chart(chartish):
     subprocess.check_call(['open', chartish.to_gchart()])
