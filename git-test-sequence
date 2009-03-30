@@ -1,0 +1,29 @@
+#!/bin/sh
+# Run a command over a sequence of builds.
+# Example:
+#  git test-sequence origin/master.. 'make clean && make test'
+
+start_branch=`git rev-parse --symbolic-full-name HEAD | sed s,refs/heads/,,`
+tmpbranch=test_seq_$$
+
+git checkout -b $tmpbranch
+
+cleanup() {
+    git checkout $start_branch
+    git branch -D $tmpbranch
+}
+
+broke_on() {
+    echo "Broke on $v"
+    cleanup
+    exit 1
+}
+
+for v in `git rev-list --reverse $1`
+do
+    git reset --hard $v && eval "$2" || broke_on $v
+done
+
+cleanup
+
+echo "All's well."
