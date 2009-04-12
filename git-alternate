@@ -17,21 +17,45 @@ def nearest_git_objects(path):
         return objects
     raise exceptions.RuntimeError("Could not find git dir from " + path)
 
-def setup_alternates(from_objects, to_objects):
-    fn = os.path.join(from_objects, "info", "alternates")
-    alts=set()
+def alt_path(git_path):
+    return os.path.join(git_path, "info", "alternates")
+
+def read_objs(git_path):
+    fn = alt_path(git_path)
+    alts = set()
     if os.path.exists(fn):
         with open(fn) as f:
             alts = set([l.strip() for l in f.readlines()])
+
+    return alts
+
+def setup_alternates(from_objects, to_objects):
+    alts = read_objs(from_objects)
     alts.add(to_objects)
-    with open(os.path.join(from_objects, "info", "alternates"), "w") as f:
+    with open(alt_path(from_objects), "w") as f:
         f.write("\n".join(alts) + "\n")
 
-if __name__ == '__main__':
-    alt = nearest_git_objects(sys.argv[1])
+def here():
     (e, o) = commands.getstatusoutput("git rev-parse --git-dir")
     if e != 0:
         raise exceptions.RuntimeError("This is not a git repo.")
-    loc = nearest_git_objects(o.strip())
+    return nearest_git_objects(o.strip())
+
+def setup_new_alternate(where):
+    alt = nearest_git_objects(where)
+    loc = here()
     print loc, "->", alt
     setup_alternates(loc, alt)
+
+def display_alternates():
+    p = here()
+    alts = read_objs(p)
+    print "Alternates for %s (%d):" % (p, len(alts))
+    for s in sorted(alts):
+        print "   %s" % s
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        display_alternates()
+    else:
+        setup_new_alternate(sys.argv[1])
