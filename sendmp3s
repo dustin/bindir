@@ -3,9 +3,10 @@
 ITUNES="/Volumes/bag/itunes/"
 
 rsync "$@" -varltpogS --progress --stats \
-	--delete --delete-excluded --exclude .DS_Store \
-	--exclude=Podcasts/ \
-	--exclude=Coverville/ \
+    --delete --delete-excluded --exclude .DS_Store \
+    --exclude=.Trashes/ \
+    --exclude=Podcasts/ \
+    --exclude=Coverville/ \
     --exclude=.Spotlight-V100 \
     "$ITUNES" purple::${USER}mp3w/
 
