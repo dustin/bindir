@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ITUNES="/Volumes/bag/itunes/"
+ITUNES="/Volumes/bag/itunes/Music/"
 
 rsync "$@" -varltpogS --progress --stats \
     --delete --delete-excluded --exclude .DS_Store \
