@@ -1,5 +1,5 @@
 #!/bin/sh
-# Run a command over a sequence of builds.
+# Run a command over a sequence of commits.
 # Example:
 #  git test-sequence origin/master.. 'make clean && make test'
 
