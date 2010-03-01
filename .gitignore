@@ -1,4 +1,4 @@
+*.pyc
+*~
 i386-apple-darwin
 powerpc-apple-darwin
-*~
-*.pyc
