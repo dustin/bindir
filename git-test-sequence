@@ -3,25 +3,58 @@
 # Example:
 #  git test-sequence origin/master.. 'make clean && make test'
 
+# The tree must be really really clean.
+if ! git update-index --ignore-submodules --refresh > /dev/null; then
+	echo >&2 "cannot rebase: you have unstaged changes"
+	git diff-files --name-status -r --ignore-submodules -- >&2
+	exit 1
+fi
+diff=$(git diff-index --cached --name-status -r --ignore-submodules HEAD --)
+case "$diff" in
+?*)	echo >&2 "cannot rebase: your index contains uncommitted changes"
+	echo >&2 "$diff"
+	exit 1
+	;;
+esac
+
 start_branch=`git rev-parse --symbolic-full-name HEAD | sed s,refs/heads/,,`
 tmpbranch=test_seq_$$
 
-git checkout -b $tmpbranch
+git checkout -b $tmpbranch > /dev/null 2>/dev/null
 
 cleanup() {
-    git checkout $start_branch
-    git branch -D $tmpbranch
+    git checkout $start_branch > /dev/null 2>/dev/null
+    git branch -D $tmpbranch > /dev/null
+}
+
+already_passed() {
+    git show-ref "refs/test/pass/pass-$v" "$v" > /dev/null && echo "Already passed $v"
+}
+
+already_failed() {
+    git show-ref "refs/test/fail/fail-$v" "$v" > /dev/null && echo "Already failed $v" && cleanup && exit 1
+}
+
+passed_on() {
+    git update-ref "refs/test/pass/pass-$v" "$v"
 }
 
 broke_on() {
+    git update-ref "refs/test/fail/fail-$v" "$v"
     echo "Broke on $v"
     cleanup
     exit 1
 }
 
+new_test() {
+    echo "Testing $2"
+    git reset --hard $v && eval "$2" && passed_on $v || broke_on $v
+}
+
+
 for v in `git rev-list --reverse $1`
 do
-    git reset --hard $v && eval "$2" || broke_on $v
+    already_passed $v || already_failed $v || new_test $v $2
 done
 
 cleanup
