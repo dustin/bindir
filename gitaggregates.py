@@ -90,7 +90,7 @@ class TimeHisto(object):
 
 class Contributors(object):
 
-    width = 400
+    width = 420
     height = 300
     max_entries = 6
 
