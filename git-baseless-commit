@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# WHY!?
+#
+# The purpose of this command is to allow me to create a snapshot of a
+# tree without history.  My primary use for such a thing is to
+# distribute large generated documentation sets as gh-pages for
+# github.
+#
+
+msg="$@"
+
+if [ -z "$msg" ]
+then
+        echo "Usage:  git baseless-commit my awesome commit message"
+        exit 1
+fi
+
+thisbranch=`git symbolic-ref HEAD`
+oldhead=`git rev-parse HEAD`
+
+if [ $thisbranch != refs/heads/gh-pages ]
+then
+    echo "You're currently on a branch called $thisbranch"
+    echo "If you're OK destroying that branch, hit enter, otherwise hit ^C"
+    read all_about_it
+fi
+
+tree=`git write-tree`
+commit=`echo "$msg" | git commit-tree $tree`
+git symbolic-ref -m "git baseless-commit" HEAD $thisbranch
+git reset --hard $commit
+
+echo "If you messed up and destroyed something on accident, you can"
+echo "still get your old head back: $oldhead"
