@@ -18,15 +18,11 @@ case "$diff" in
 esac
 
 start_branch=`git rev-parse --symbolic-full-name HEAD | sed s,refs/heads/,,`
-tmpbranch=test_seq_$$
-
-git checkout -b $tmpbranch > /dev/null 2>/dev/null
+git checkout `git rev-parse HEAD` > /dev/null 2>/dev/null
 
 cleanup() {
     git checkout $start_branch > /dev/null 2>/dev/null
-    git branch -D $tmpbranch > /dev/null
 }
-
 already_passed() {
     git show-ref "refs/test/pass/pass-$v" "$v" > /dev/null && echo "Already passed $v"
 }
@@ -37,6 +33,7 @@ already_failed() {
 
 passed_on() {
     git update-ref "refs/test/pass/pass-$v" "$v"
+    echo "Passed: $v."
 }
 
 broke_on() {
@@ -54,9 +51,8 @@ new_test() {
 
 for v in `git rev-list --reverse $1`
 do
-    already_passed $v || already_failed $v || new_test $v $2
+    already_passed $v || already_failed $v || new_test $v "$2"
 done
 
 cleanup
-
 echo "All's well."
