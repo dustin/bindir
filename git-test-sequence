@@ -3,6 +3,8 @@
 # Example:
 #  git test-sequence origin/master.. 'make clean && make test'
 
+run_once=
+
 # The tree must be really really clean.
 if ! git update-index --ignore-submodules --refresh > /dev/null; then
 	echo >&2 "cannot rebase: you have unstaged changes"
@@ -41,8 +43,26 @@ broke_on() {
 new_test() {
     echo "Testing $2"
     git reset --hard $v && eval "$2" && passed_on $v || broke_on $v
+    status=$?
+    if test -n "$run_once"; then
+	cleanup
+	exit $status
+    fi
 }
 
+
+while test $# != 0
+do
+    case "$1" in 
+    --once)
+        run_once=yes
+	;;
+    *)
+        break;
+	;;
+    esac
+    shift
+done
 
 for v in `git rev-list --reverse $1`
 do
