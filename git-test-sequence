@@ -27,17 +27,12 @@ already_passed() {
     git show-ref "refs/test/pass/pass-$v" "$v" > /dev/null && echo "Already passed $v"
 }
 
-already_failed() {
-    git show-ref "refs/test/fail/fail-$v" "$v" > /dev/null && echo "Already failed $v" && cleanup && exit 1
-}
-
 passed_on() {
     git update-ref "refs/test/pass/pass-$v" "$v"
     echo "Passed: $v."
 }
 
 broke_on() {
-    git update-ref "refs/test/fail/fail-$v" "$v"
     echo "Broke on $v"
     cleanup
     exit 1
@@ -51,7 +46,7 @@ new_test() {
 
 for v in `git rev-list --reverse $1`
 do
-    already_passed $v || already_failed $v || new_test $v "$2"
+    already_passed $v || new_test $v "$2"
 done
 
 cleanup
