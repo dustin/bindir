@@ -1,0 +1,28 @@
+# timelimit watches standard out for a delay longer than the timeout w/o any output.
+# Example:
+#   make clean test | timeout 300
+procid=$$
+timelimit=$1
+touch tmp.out  # Set initial time in case never get any output
+while true
+do 
+    lastline=$(date +%s -r tmp.out)
+    currtime=$(date +%s)
+    (( diff = currtime - lastline ))
+    if [ $diff -gt 10 ]
+    then
+        echo "Over $diff seconds w/o response."
+    fi
+    if [ $diff -gt $timelimit ]
+    then
+        echo "Exceeded maximim timout of ${timelimit} seconds w/o response."
+	kill -9 0
+	exit 1
+    fi
+    sleep 10
+done &
+while read line
+do
+    echo $line
+    touch tmp.out
+done
