@@ -4,6 +4,7 @@
 #  git test-sequence origin/master.. 'make clean && make test'
 
 run_once=
+ref_name=pass
 
 # The tree must be really really clean.
 if ! git update-index --ignore-submodules --refresh > /dev/null; then
@@ -26,11 +27,11 @@ cleanup() {
     git checkout $start_branch > /dev/null 2>/dev/null
 }
 already_passed() {
-    git show-ref "refs/test/pass/pass-$v" "$v" > /dev/null && echo "Already passed $v"
+    git show-ref "refs/test/${ref_name}/${ref_name}-$v" "$v" > /dev/null && echo "Already ${ref_name} $v"
 }
 
 passed_on() {
-    git update-ref "refs/test/pass/pass-$v" "$v"
+    git update-ref "refs/test/${ref_name}/${ref_name}-$v" "$v"
     echo "Passed: $v."
 }
 
@@ -56,6 +57,10 @@ do
     case "$1" in 
     --once)
         run_once=yes
+	;;
+    --ref-name)
+        ref_name=$2
+	shift
 	;;
     *)
         break;

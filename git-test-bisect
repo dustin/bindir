@@ -1,0 +1,33 @@
+#!/bin/sh
+# Run a command for a test. If it passes make a ref so that if called again on the same commit report success w/o re-testing.
+# Example:
+#  git test-bisect origin/integrate.. 'make clean && make compile && make test'
+
+ref_name=test
+
+# The tree must be really really clean.
+if ! git update-index --ignore-submodules --refresh > /dev/null; then
+	echo >&2 "cannot rebase: you have unstaged changes"
+	git diff-files --name-status -r --ignore-submodules -- >&2
+	exit 1
+fi
+diff=$(git diff-index --cached --name-status -r --ignore-submodules HEAD --)
+case "$diff" in
+?*)	echo >&2 "cannot rebase: your index contains uncommitted changes"
+	echo >&2 "$diff"
+	exit 1
+	;;
+esac
+
+start_branch=`git rev-parse --symbolic-full-name HEAD | sed s,refs/heads/,,`
+git checkout `git rev-parse HEAD` > /dev/null 2>/dev/null
+
+good=`git rev-list $1 | tail -1`
+bad=`git rev-list $1 | head -1`
+echo "Bisecting $1 with $2"
+git bisect start
+git bisect good ${good}
+git bisect bad ${bad}
+git bisect run git test-once "$2"
+git bisect reset
+echo "All's well."

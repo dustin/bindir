@@ -1,0 +1,24 @@
+#!/bin/sh
+# Run a command over a sequence of commits.
+# Example:
+#  git test-once 'make clean && make compile && make test'
+
+ref_name=test
+
+already_tested() {
+    git show-ref "refs/test/${ref_name}/${ref_name}-$hash" "$hash" > /dev/null && echo "Already passed $hash"
+}
+
+tested_on() {
+    git update-ref "refs/test/${ref_name}/${ref_name}-$hash" "$hash"
+    echo "Passed: $hash."
+}
+
+broke_on() {
+    echo "Broke on $v"
+    return 1
+}
+
+hash=`git rev-parse HEAD`
+echo "Testing $1"
+already_tested $hash || ( eval "$1" && tested_on $hash ) || broke_on $hash
