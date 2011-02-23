@@ -73,6 +73,11 @@ for v in `git rev-list --reverse $1`
 do
     already_passed $v || new_test $v "$2"
 done
-
 cleanup
+
+if test -n "$run_once"; then
+    echo "All commits already passed for --once argument. Quiting."
+    exit 127
+fi
+
 echo "All's well."
