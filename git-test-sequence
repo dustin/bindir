@@ -3,6 +3,9 @@
 # Example:
 #  git test-sequence origin/master.. 'make clean && make test'
 
+. git-sh-setup
+require_work_tree
+
 start_branch=`git rev-parse --symbolic-full-name HEAD | sed s,refs/heads/,,`
 tmpbranch=test_seq_$$
 
