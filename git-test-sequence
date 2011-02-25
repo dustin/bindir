@@ -6,14 +6,36 @@
 . git-sh-setup
 require_work_tree
 
-start_branch=`git rev-parse --symbolic-full-name HEAD | sed s,refs/heads/,,`
-tmpbranch=test_seq_$$
+run_once=
+ref_name=pass
 
-git checkout -b $tmpbranch
+# The tree must be really really clean.
+if ! git update-index --ignore-submodules --refresh > /dev/null; then
+	echo >&2 "cannot rebase: you have unstaged changes"
+	git diff-files --name-status -r --ignore-submodules -- >&2
+	exit 1
+fi
+diff=$(git diff-index --cached --name-status -r --ignore-submodules HEAD --)
+case "$diff" in
+?*)	echo >&2 "cannot rebase: your index contains uncommitted changes"
+	echo >&2 "$diff"
+	exit 1
+	;;
+esac
+
+start_branch=`git rev-parse --symbolic-full-name HEAD | sed s,refs/heads/,,`
+git checkout `git rev-parse HEAD` > /dev/null 2>/dev/null
 
 cleanup() {
-    git checkout $start_branch
-    git branch -D $tmpbranch
+    git checkout $start_branch > /dev/null 2>/dev/null
+}
+already_passed() {
+    git show-ref "refs/test/${ref_name}/${ref_name}-$v" "$v" > /dev/null && echo "Already ${ref_name} $v"
+}
+
+passed_on() {
+    git update-ref "refs/test/${ref_name}/${ref_name}-$v" "$v"
+    echo "Passed: $v."
 }
 
 broke_on() {
@@ -22,11 +44,43 @@ broke_on() {
     exit 1
 }
 
-for v in `git rev-list --reverse $1`
+new_test() {
+    echo "Testing $2"
+    git reset --hard $v && eval "$2" && passed_on $v || broke_on $v
+    status=$?
+    if test -n "$run_once"; then
+	cleanup
+	exit $status
+    fi
+}
+
+
+while test $# != 0
 do
-    git reset --hard $v && eval "$2" || broke_on $v
+    case "$1" in 
+    --once)
+        run_once=yes
+	;;
+    --ref-name)
+        ref_name=$2
+	shift
+	;;
+    *)
+        break;
+	;;
+    esac
+    shift
 done
 
+for v in `git rev-list --reverse $1`
+do
+    already_passed $v || new_test $v "$2"
+done
 cleanup
+
+if test -n "$run_once"; then
+    echo "All commits already passed for --once argument. Quiting."
+    exit 127
+fi
 
 echo "All's well."

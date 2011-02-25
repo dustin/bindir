@@ -1,0 +1,17 @@
+#!/bin/sh
+# Clean all files that are ignored and not tracked, but exclude those listed in .gitexcept file.
+# Example:
+#  git clean-except 
+
+except=`cat .gitexcept | tr -d '\r' | tr '\n' '|' | sed "s/|$//"`
+files="git ls-files -o -i --exclude-standard"
+count=`$files | egrep -v $except | wc -l`
+if [ $count -eq 0 ]
+then
+   echo "Already clean!"
+else
+   echo "Deleting these files:"
+   $files | egrep -v $except
+   $files | egrep -v $except | xargs rm
+   echo "$count files cleaned."
+fi
