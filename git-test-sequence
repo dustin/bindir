@@ -32,12 +32,15 @@ cleanup() {
 }
 
 already_passed() {
-    git show-ref "refs/test/${ref_name}/${ref_name}-$t-$v" "$v" > /dev/null && \
-        echo "Already ${ref_name} $v"
+    obdata=${ref_name}-$t-$v
+    obhash=`echo $obdata | git hash-object --stdin`
+    git cat-file blob $obhash > /dev/null 2>/dev/null \
+        && echo "Already ${ref_name} $v"
 }
 
 passed_on() {
-    git update-ref "refs/test/${ref_name}/${ref_name}-$t-$v" "$v"
+    obdata=${ref_name}-$t-$v
+    echo $obdata | git hash-object -w --stdin > /dev/null
     echo "Passed: $v."
 }
 
