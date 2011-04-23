@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+
+from sqlite3 import dbapi2 as sqlite
+
+CREATE_TABLE="""
+create table if not exists snapshots (
+  inode integer,
+  path text,
+  name text,
+  pos integer,
+  ts integer
+)
+"""
+
+INSERT="""
+insert into snapshots (inode, path, name, pos, ts) values (?, ?, ?, ?, ?)
+"""
+
+LIST="""
+select name, pos, ts from snapshots where path = ? and inode = ?
+  order by ts desc
+"""
+
+FIND="""
+select pos from snapshots where path = ? and inode = ? and name = ?
+"""
+
+def wants_db(orig):
+    def f(*args):
+        dbpath = os.path.expanduser("~/.couchsnap")
+        db = sqlite.connect(dbpath)
+        db.execute(CREATE_TABLE)
+        try:
+            return orig(*args + (db,))
+        finally:
+            db.commit()
+            db.close()
+    return f
+
+@wants_db
+def create_snap(filename, snapname, db):
+    inode = os.stat(filename).st_ino
+    with open(filename, "r") as f:
+        f = open(filename, "r")
+        f.seek(0, 2)
+        pos = f.tell()
+
+    cur = db.cursor()
+    cur.execute(INSERT, (inode, filename, snapname, pos, int(time.time())))
+
+@wants_db
+def list_snaps(filename, db):
+    inode = os.stat(filename).st_ino
+
+    cur = db.cursor()
+    cur.execute(LIST, (filename, inode))
+    for n, pos, ts in cur.fetchall():
+        print "%s -- %s" % (n, time.ctime(ts))
+
+@wants_db
+def restore_snap(filename, snapname, db):
+    inode = os.stat(filename).st_ino
+
+    cur = db.cursor()
+    rows = cur.execute(FIND, (filename, inode, snapname)).fetchall()
+    if not rows:
+        print "Could not find the requested snapshot."
+    else:
+        pos = rows[0][0]
+        with open(filename, "ab") as f:
+            f.truncate(pos)
+
+def usage():
+    sys.exit("""Usage:
+
+  %(n)s list
+  %(n)s create filename snap_name
+  %(n)s restore filename snap_name
+
+filename represents the full path to the database you want a snapshot
+of.  snap_name is the name of the snapshot.
+
+snapshots are invalidated by compaction.
+""" % {'n': sys.argv[0]})
+
+if __name__ == '__main__':
+    wants_path = os.path.abspath
+    cmds = {
+        'create':   (2, wants_path, create_snap),
+        'list':     (1, wants_path, list_snaps),
+        'restore':  (2, wants_path, restore_snap)
+        }
+
+    if len(sys.argv) < 2 or sys.argv[1] not in cmds:
+        usage()
+
+    args = sys.argv[2:]
+    arity, xform, f = cmds[sys.argv[1]]
+
+    if len(args) != arity:
+        usage()
+
+    f(xform(args[0]), *args[1:])
