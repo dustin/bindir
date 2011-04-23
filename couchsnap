@@ -29,6 +29,14 @@ FIND="""
 select pos from snapshots where path = ? and inode = ? and name = ?
 """
 
+LIST_FILES="""
+select distinct path from snapshots
+"""
+
+CLEAN_FILE="""
+delete from snapshots where path = ? and inode != ? and pos > ?
+"""
+
 def wants_db(orig):
     def f(*args):
         dbpath = os.path.expanduser("~/.couchsnap")
@@ -74,12 +82,28 @@ def restore_snap(filename, snapname, db):
         with open(filename, "ab") as f:
             f.truncate(pos)
 
+@wants_db
+def cleanup(db):
+    cur = db.cursor()
+    for fn in cur.execute(LIST_FILES).fetchall():
+        fn = fn[0]
+        try:
+            s = os.stat(fn)
+            inode, size = s.st_ino, s.st_size
+        except OSError:
+            inode, size = 0, -1
+
+        cur.execute(CLEAN_FILE, (fn, inode, size))
+
+    cur.execute("vacuum")
+
 def usage():
     sys.exit("""Usage:
 
   %(n)s list
   %(n)s create filename snap_name
   %(n)s restore filename snap_name
+  %(n)s cleanup
 
 filename represents the full path to the database you want a snapshot
 of.  snap_name is the name of the snapshot.
@@ -92,7 +116,8 @@ if __name__ == '__main__':
     cmds = {
         'create':   (2, wants_path, create_snap),
         'list':     (1, wants_path, list_snaps),
-        'restore':  (2, wants_path, restore_snap)
+        'restore':  (2, wants_path, restore_snap),
+        'cleanup':  (0, lambda x: x, cleanup)
         }
 
     if len(sys.argv) < 2 or sys.argv[1] not in cmds:
@@ -104,4 +129,7 @@ if __name__ == '__main__':
     if len(args) != arity:
         usage()
 
-    f(xform(args[0]), *args[1:])
+    if args:
+        args[0] = xform(args[0])
+
+    f(*args)
