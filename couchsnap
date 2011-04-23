@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+#
+# This tool is used to manage arbitrary snapshot points in an
+# append-only database.
+#
+# It tracks previous points in time in the DB and allows you to
+# destructively reverse changes.
+#
+# Primarily, I use this to restore a DB to a known-good state after
+# doing lots of stuff I want to undo.
+#
+
 import os
 import sys
 import time
