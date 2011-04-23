@@ -104,7 +104,6 @@ def cleanup_file(db, fn):
         inode, size = 0, -1
 
     cur = db.cursor()
-    print "Cleaning", fn, inode, size
     cur.execute(CLEAN_FILE, (fn, inode, size))
 
 @wants_db
