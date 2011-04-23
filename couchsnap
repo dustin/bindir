@@ -32,12 +32,12 @@ insert into snapshots (inode, path, name, pos, ts) values (?, ?, ?, ?, ?)
 """
 
 LIST="""
-select name, pos, ts from snapshots where path = ? and inode = ?
+select name, pos, ts from snapshots where path = ? and inode = ? and pos <= ?
   order by ts desc
 """
 
 FIND="""
-select pos from snapshots where path = ? and inode = ? and name = ?
+select pos from snapshots where path = ? and inode = ? and pos <= ? and name = ?
 """
 
 LIST_FILES="""
@@ -45,7 +45,7 @@ select distinct path from snapshots
 """
 
 CLEAN_FILE="""
-delete from snapshots where path = ? and inode != ? and pos > ?
+delete from snapshots where path = ? and (inode != ? or pos > ?)
 """
 
 def wants_db(orig):
@@ -73,38 +73,45 @@ def create_snap(filename, snapname, db):
 
 @wants_db
 def list_snaps(filename, db):
-    inode = os.stat(filename).st_ino
+    s = os.stat(filename)
+    inode, size = s.st_ino, s.st_size
 
     cur = db.cursor()
-    cur.execute(LIST, (filename, inode))
+    cur.execute(LIST, (filename, inode, s.st_size))
     for n, pos, ts in cur.fetchall():
         print "%s -- %s" % (n, time.ctime(ts))
 
 @wants_db
 def restore_snap(filename, snapname, db):
-    inode = os.stat(filename).st_ino
+    s = os.stat(filename)
+    inode, size = s.st_ino, s.st_size
 
     cur = db.cursor()
-    rows = cur.execute(FIND, (filename, inode, snapname)).fetchall()
+    rows = cur.execute(FIND, (filename, inode, size, snapname)).fetchall()
     if not rows:
         print "Could not find the requested snapshot."
     else:
         pos = rows[0][0]
         with open(filename, "ab") as f:
             f.truncate(pos)
+        cleanup_file(db, filename)
+
+def cleanup_file(db, fn):
+    try:
+        s = os.stat(fn)
+        inode, size = s.st_ino, s.st_size
+    except OSError:
+        inode, size = 0, -1
+
+    cur = db.cursor()
+    print "Cleaning", fn, inode, size
+    cur.execute(CLEAN_FILE, (fn, inode, size))
 
 @wants_db
 def cleanup(db):
     cur = db.cursor()
     for fn in cur.execute(LIST_FILES).fetchall():
-        fn = fn[0]
-        try:
-            s = os.stat(fn)
-            inode, size = s.st_ino, s.st_size
-        except OSError:
-            inode, size = 0, -1
-
-        cur.execute(CLEAN_FILE, (fn, inode, size))
+        cleanup_file(db, fn[0])
 
     cur.execute("vacuum")
 
