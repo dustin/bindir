@@ -3,22 +3,24 @@
 # Example:
 #  git test-once 'make clean && make compile && make test'
 
-ref_name=test
+. git-sh-setup
+require_work_tree
 
-already_tested() {
-    git show-ref "refs/test/${ref_name}/${ref_name}-$hash" "$hash" > /dev/null && echo "Already passed $hash"
+get_hash_input() {
+    echo "$1"
+    git rev-parse 'HEAD^{tree}'
+    git diff HEAD
 }
 
-tested_on() {
-    git update-ref "refs/test/${ref_name}/${ref_name}-$hash" "$hash"
-    echo "Passed: $hash."
+already_passed() {
+    h=`get_hash_input "$1" | git hash-object --stdin`
+    git cat-file blob $h > /dev/null 2>/dev/null && echo "Already passed $h"
 }
 
-broke_on() {
-    echo "Broke on $v"
-    return 1
+passed_on() {
+    h=`get_hash_input "$1" | git hash-object -w --stdin`
+    echo "Passed: $h."
 }
 
-hash=`git rev-parse HEAD`
 echo "Testing $1"
-already_tested $hash || ( eval "$1" && tested_on $hash ) || broke_on $hash
+already_passed "$1" || ( eval "$1" && passed_on "$1" ) || passed_on "$1"
