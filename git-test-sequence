@@ -32,27 +32,27 @@ cleanup() {
 }
 
 already_passed() {
-    obdata=${ref_name}-$t-$v
+    obdata=${ref_name}-$t-$1
     obhash=`echo $obdata | git hash-object --stdin`
     git cat-file blob $obhash > /dev/null 2>/dev/null \
-        && echo "Already ${ref_name} $v"
+        && echo "Already ${ref_name} $1"
 }
 
 passed_on() {
-    obdata=${ref_name}-$t-$v
+    obdata=${ref_name}-$t-$1
     echo $obdata | git hash-object -w --stdin > /dev/null
-    echo "Passed: $v."
+    echo "Passed: $1."
 }
 
 broke_on() {
-    echo "Broke on $v"
+    echo "Broke on $1"
     cleanup
     exit 1
 }
 
 new_test() {
     echo "Testing $2"
-    git reset --hard $v && eval "$2" && passed_on $v || broke_on $v
+    git reset --hard $v && eval "$2" && passed_on $1 || broke_on $1
     status=$?
     if test -n "$run_once"; then
         cleanup
@@ -82,7 +82,8 @@ t=`echo "$2" | git hash-object --stdin`
 
 for v in `git rev-list --reverse $1`
 do
-    already_passed $v || new_test $v "$2"
+    tree_ver=`git rev-parse "$v^{tree}"`
+    already_passed $tree_ver || new_test $tree_ver "$2"
 done
 cleanup
 
