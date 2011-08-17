@@ -52,7 +52,7 @@ broke_on() {
 
 new_test() {
     echo "Testing $2"
-    git reset --hard $v && eval "$2" && passed_on $1 || broke_on $1
+    git reset --hard $v && eval "$2" && passed_on $1 || broke_on $v
     status=$?
     if test -n "$run_once"; then
         cleanup
