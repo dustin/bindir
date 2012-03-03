@@ -123,5 +123,53 @@ class Contributors(object):
     def to_gchart(self):
         return self.mk_chart().get_url()
 
+class ChangeOverTime(object):
+
+    width = 800
+    height = 300
+    max_entries = 6
+
+    def __init__(self, log_args=['HEAD']):
+        self.newdata = []
+        self.cumulative = []
+        self.cmax = 0
+        self.max = 0
+
+    def add_logs(self, directory=None, log_args=['HEAD']):
+        args = ['git', 'log', '--pretty=format:%at'] + log_args
+        sub = subprocess.Popen(args, stdout=subprocess.PIPE, close_fds=True)
+
+        dates = {}
+        for l in sub.stdout:
+            k = time.strftime("%F", time.localtime(float(l.strip())))
+            dates[k] = dates.get(k, 0) + 1
+
+        total = 0
+        for k,v in sorted(dates.items()):
+            total += v
+            self.max = max(self.max, v)
+            self.newdata.append( (k, v) )
+            self.cumulative.append( (k, total) )
+
+        self.cmax = total
+
+    def dump(self):
+        sys.stderr.write(repr(self.data) + "\n")
+
+    def mk_chart(self):
+        from pygooglechart import SimpleLineChart
+        chart =  SimpleLineChart(self.width, self.height)
+
+        all_labels = [d[0] for d in self.cumulative]
+
+        chart.add_data([d[1] for d in self.cumulative])
+        chart.set_axis_labels('y', range(0, self.cmax, (self.cmax / 4)))
+        chart.set_axis_labels('x', [all_labels[x] for x in
+                                    range(0, len(all_labels), (len(all_labels) / 4))])
+        return chart
+
+    def to_gchart(self):
+        return self.mk_chart().get_url()
+
 def open_chart(chartish):
     subprocess.check_call(['open', chartish.to_gchart()])

@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+"""Create bar chart showing divergence over time.
+
+For printing a chart (the default), pygooglechart is required:
+
+ http://pygooglechart.slowchop.com/
+
+Note that this assumes you've got an OS-X style "open" command.  If
+you don't, it should be easy enough to adapt main to what you need.
+
+"""
+
+import sys
+
+import gitaggregates
+
+if __name__ == '__main__':
+    th = gitaggregates.ChangeOverTime()
+    th.add_logs(log_args=sys.argv[1:])
+    gitaggregates.open_chart(th)
