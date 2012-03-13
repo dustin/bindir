@@ -27,12 +27,15 @@ class AuthorCounter(object):
                     self.umap[current_user] += 1
                 else:
                     try:
-                        k, v = l.strip().split(' ', 1)
+                        if l.rstrip() == 'boundary':
+                            k, v = 'boundary', ''
+                        else:
+                            k, v = l.strip().split(' ', 1)
                     except ValueError:
-                        sys.stderr.write("Error parsing %s\n" % l)
+                        sys.stderr.write("Error parsing %s on %s\n" % (repr(l), self.filename))
                         k = l
                         v = ''
-                    if len(k) == 40: # Assumed SHA
+                    if len(k) == 40 or k == 'boundary': # Assumed SHA
                         current = ''
                         current_sha = k
                         if current_sha in commit_u_map:
