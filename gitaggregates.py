@@ -158,11 +158,12 @@ class ChangeOverTime(object):
 
     def mk_chart(self):
         from pygooglechart import SimpleLineChart
-        chart =  SimpleLineChart(self.width, self.height)
+        chart =  SimpleLineChart(self.width, self.height, colours=('91CF60', 'FC8D59'))
 
         all_labels = [d[0] for d in self.cumulative]
 
         chart.add_data([d[1] for d in self.cumulative])
+        chart.add_data([d[1] for d in self.newdata])
         chart.set_axis_labels('y', range(0, self.cmax, (self.cmax / 4)))
         chart.set_axis_labels('x', [all_labels[x] for x in
                                     range(0, len(all_labels), (len(all_labels) / 4))])
