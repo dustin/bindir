@@ -14,12 +14,15 @@ class TimeHisto(object):
         args=['git']
         if directory:
             args.append('--git-dir=' + directory)
-        args.extend(['log', '--pretty=format:%at'])
+        args.extend(['log', '--format=%ad', '--date=raw'])
         args.extend(log_args)
         sub = subprocess.Popen(args, stdout=subprocess.PIPE, close_fds=True)
 
         for l in sub.stdout:
-            self.h[time.strftime("%w %H", time.localtime(float(l.strip())))] += 1
+            t, offset = l.strip().split(' ')
+            t = float(t) + int(offset) / 100 * 3600
+
+            self.h[time.strftime("%w %H", time.gmtime(t))] += 1
 
     def dump(self):
         for h in range(24):
