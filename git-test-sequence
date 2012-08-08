@@ -3,7 +3,7 @@
 # Example:
 #  git test-sequence origin/master.. 'make clean && make test'
 
-. git-sh-setup
+. "$(git --exec-path)/git-sh-setup"
 require_work_tree
 
 t=

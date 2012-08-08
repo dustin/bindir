@@ -3,7 +3,7 @@
 # Example:
 #  git test-once 'make clean && make compile && make test'
 
-. git-sh-setup
+. "$(git --exec-path)/git-sh-setup"
 require_work_tree
 
 get_hash_input() {
