@@ -17,8 +17,9 @@ detect() {
         if [ $? -ne 0 ]
         then
             echo "Warning: Can't identify $pkg"
+        else
+            echo "$pkg $hgv"
         fi
-        echo "$pkg $hgv"
     fi
 }
 
