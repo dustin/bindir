@@ -1,0 +1,10 @@
+#!/bin/sh
+# How to list all of the (known) keys that can decrypt a file.
+# gpg --list-only almost does this, but doesn't show your own.  That's
+# usually what I want to know.
+
+for i in "$@"
+do
+    echo "$i":
+    gpg --no-default-keyring --secret-keyring /dev/null -a --list-only "$i"
+done
