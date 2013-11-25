@@ -45,7 +45,7 @@ passed_on() {
 }
 
 broke_on() {
-    echo "Broke on $1"
+    git log --pretty="format:Broke on %H (%s)%n" -n 1 $1
     cleanup
     exit 1
 }
