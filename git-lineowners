@@ -20,7 +20,7 @@ class AuthorCounter(object):
         commit_u_map = {}
 
         if self.size < 2*1024*1024:
-            args = ['git', 'blame', '-p', self.rev, self.filename]
+            args = ['git', 'blame', '-M5', '-C5', '-p', self.rev, self.filename]
             sub=subprocess.Popen(args, stdout=subprocess.PIPE, close_fds=True)
             for l in sub.stdout:
                 if l.startswith("\t"):
