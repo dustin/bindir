@@ -64,6 +64,9 @@ new_test() {
 while test $# != 0
 do
     case "$1" in
+        --force)
+            force=yes
+            ;;
         --once)
             run_once=yes
             ;;
@@ -83,7 +86,7 @@ t=`echo "$2" | git hash-object --stdin`
 for v in `git rev-list --reverse $1`
 do
     tree_ver=`git rev-parse "$v^{tree}"`
-    already_passed $tree_ver || new_test $tree_ver "$2"
+    test -z "$force" && already_passed $tree_ver || new_test $tree_ver "$2"
 done
 cleanup
 
