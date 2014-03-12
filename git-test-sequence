@@ -7,6 +7,7 @@
 require_work_tree
 
 t=
+force=
 run_once=
 ref_name=pass
 
