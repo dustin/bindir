@@ -3,5 +3,9 @@
 import sys
 import time
 
+if len(sys.argv) == 1:
+        t = time.time()
+        print int(t), time.ctime(t)
+
 for i in sys.argv[1:]:
 	print i, time.ctime(float(i))
