@@ -1,0 +1,6 @@
+#!/bin/sh
+
+for i in "$@"
+do
+        echo "2k $i 9 * 5 / 32 + p" | dc
+done
