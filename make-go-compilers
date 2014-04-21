@@ -1,0 +1,12 @@
+#!/bin/sh
+ 
+hg purge -v --all
+./make.bash
+ 
+for os in darwin freebsd linux netbsd openbsd plan9 windows
+do
+    for arch in 386 amd64 arm
+    do
+        env GOOS=$os GOARCH=$arch ./make.bash --no-clean
+    done
+done
