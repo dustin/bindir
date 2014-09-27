@@ -2,6 +2,6 @@
 
 while "$@"
 do
-	echo Retrying...
 	sleep 1
+	echo Retrying...
 done
