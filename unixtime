@@ -2,10 +2,18 @@
 
 import sys
 import time
+import string
+
+def parse(i):
+        # Remove everything but the digits
+        i = float(filter(lambda c: c in string.digits, i))
+        while i > 2**31:
+                i /= 10
+        return i
 
 if len(sys.argv) == 1:
         t = time.time()
         print int(t), time.ctime(t)
-
-for i in sys.argv[1:]:
-	print i, time.ctime(float(i))
+else:
+        for i in sys.argv[1:]:
+                print i, time.ctime(parse(i))
