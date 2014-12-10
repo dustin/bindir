@@ -1,6 +1,6 @@
 #!/bin/sh
  
-hg purge -v --all
+git clean -dfx
 ./make.bash
  
 for os in darwin freebsd linux netbsd openbsd plan9 windows
