@@ -1,12 +1,13 @@
 #!/bin/sh
- 
+
 git clean -dfx
 ./make.bash
- 
-for os in darwin freebsd linux netbsd openbsd plan9 windows
+
+for f in runtime/rt0_*.s
 do
-    for arch in 386 amd64 arm
-    do
-        env GOOS=$os GOARCH=$arch ./make.bash --no-clean
-    done
+    b=`basename $f .s`
+    os=`echo $b | awk -F_ '{print $2}'`
+    arch=`echo $b | awk -F_ '{print $3}'`
+
+    env GOOS=$os GOARCH=$arch ./make.bash --no-clean
 done
