@@ -2,14 +2,13 @@
  
 p=`pwd`
 binname=`basename $p`
- 
-env GOARCH=386 GOOS=linux CGO_ENABLED=0 go build -v -o $binname/$binname.lin32 &
-env GOARCH=arm GOOS=linux CGO_ENABLED=0 go build -v -o $binname/$binname.linarm &
-env GOARCH=arm GOARM=5 GOOS=linux CGO_ENABLED=0 go build -v -o $binname/$binname.linarm5 &
-env GOOS=linux CGO_ENABLED=0 go build -v -o $binname/$binname.lin64 &
-env GOOS=freebsd CGO_ENABLED=0 go build -v -o $binname/$binname.fbsd &
-env GOOS=windows go build -v -o $binname/$binname.exe &
-env GOARCH=386 GOOS=windows go build -v -o $binname/$binname.win32.exe &
-env GOOS=darwin go build -v -o $binname/$binname.mac &
- 
+
+for p in 386 arm amd64
+do
+    for o in linux darwin windows
+    do
+        env GOARCH=$p GOOS=$o CGO_ENABLED=0 go build -v -o $binname/$binname.$o.$p &
+    done
+done
+
 wait
