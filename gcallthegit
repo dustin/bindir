@@ -1,0 +1,13 @@
+#!/bin/sh
+
+gitgc() {
+    while read adir
+    do
+        base=${adir##*/}
+        dir=${adir%"$base"}
+        echo "Doing $dir"
+        git --git-dir="$adir" gc --aggressive
+    done
+}
+
+find $HOME -name .git | gitgc
