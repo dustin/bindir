@@ -1,9 +1,0 @@
-#!/bin/sh
-
-IN="$1"
-OUT="`basename "$1" .dot`.png"
-
-dot -Tps -o dot2png.tmp.$$.ps "$IN"
-ps2png dot2png.tmp.$$.ps
-rm dot2png.tmp.$$.ps
-mv dot2png.tmp.$$.png "$OUT"
